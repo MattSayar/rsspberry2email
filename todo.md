@@ -144,15 +144,15 @@
 - [x] Test unsubscribe flow
 
 ### Step 13: Complete Main Service Integration
-- [ ] Update src/index.js:
-  - [ ] Start subscription listener on service start
-  - [ ] Start unsubscribe listener on service start
-  - [ ] Start health check monitor
-  - [ ] Run initial RSS check
-  - [ ] Export functions for testing
-- [ ] Ensure all components are properly connected
-- [ ] Add comprehensive logging
-- [ ] Test full service integration
+- [x] Update src/index.js:
+  - [x] Start subscription listener on service start
+  - [x] Start unsubscribe listener on service start
+  - [x] Start health check monitor
+  - [x] Run initial RSS check
+  - [x] Export functions for testing
+- [x] Ensure all components are properly connected
+- [x] Add comprehensive logging
+- [x] Test full service integration
 
 ## Phase 5: Cloudflare Worker for Subscription Proxy
 
