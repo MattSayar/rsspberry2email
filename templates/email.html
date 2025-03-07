@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>New Post on Matt Sayar's Blog</title>
+  <style>
+    body {
+      background-color: #121212;
+      color: #e0e0e0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      padding: 20px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .post-title {
+      font-size: 24px;
+      margin-bottom: 16px;
+    }
+    .post-image {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+    .read-more-button {
+      display: inline-block;
+      background-color: #3d5afe;
+      color: white;
+      padding: 10px 20px;
+      text-decoration: none;
+      border-radius: 4px;
+      margin-top: 16px;
+    }
+    .footer {
+      margin-top: 30px;
+      font-size: 12px;
+      color: #909090;
+      border-top: 1px solid #303030;
+      padding-top: 16px;
+    }
+    
+    @media (prefers-color-scheme: light) {
+      body {
+        background-color: #ffffff;
+        color: #333333;
+      }
+      .footer {
+        color: #666666;
+        border-top: 1px solid #dddddd;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1 class="post-title">{{postTitle}}</h1>
+  <img class="post-image" src="{{postImage}}" alt="{{postTitle}}">
+  <a href="{{postUrl}}" class="read-more-button">Read the full post</a>
+  <div class="footer">
+    <p>You're receiving this because you subscribed to updates from <a href="https://mattsayar.com">mattsayar.com</a></p>
+    <p><a href="{{unsubscribeUrl}}">Unsubscribe</a> with one click</p>
+  </div>
+</body>
+</html>

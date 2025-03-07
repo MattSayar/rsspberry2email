@@ -1,0 +1,10 @@
+name = "subscribe-proxy"
+main = "index.js"
+compatibility_date = "2023-05-18"
+
+[vars]
+NTFY_SUBSCRIBE_TOPIC = "your_subscribe_topic_here"
+
+[[kv_namespaces]]
+binding = "RATE_LIMIT_NAMESPACE"
+id = "your_kv_namespace_id_here"

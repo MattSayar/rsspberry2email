@@ -1,0 +1,20 @@
+{
+  "name": "rss-to-email",
+  "version": "1.0.0",
+  "description": "A lightweight service that monitors an RSS feed and emails subscribers when new posts are published",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node scripts/test-email.js"
+  },
+  "dependencies": {
+    "node-fetch": "^2.6.7",
+    "xml2js": "^0.4.23",
+    "@sendgrid/mail": "^7.7.0",
+    "dotenv": "^16.0.3",
+    "handlebars": "^4.7.7",
+    "googleapis": "^118.0.0"
+  },
+  "author": "",
+  "license": "MIT"
+}

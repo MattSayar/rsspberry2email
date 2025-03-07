@@ -1,1 +1,15 @@
 .aider*
+# Dependencies
+node_modules/
+
+# Environment variables
+.env
+
+# Data files
+data/*.json
+
+# Log files
+logs/*.log
+
+# Google Drive credentials
+credentials.json

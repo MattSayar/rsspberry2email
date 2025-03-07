@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RSS-to-Email Monitoring Dashboard</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    
+    .dashboard {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    
+    .card {
+      background-color: white;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .card h2 {
+      margin-top: 0;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 10px;
+      color: #2c3e50;
+    }
+    
+    .stat {
+      font-size: 32px;
+      font-weight: bold;
+      margin: 10px 0;
+      color: #3d5afe;
+    }
+    
+    .status {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+    
+    .status.healthy {
+      background-color: #e3f2fd;
+      color: #2196f3;
+    }
+    
+    .status.warning {
+      background-color: #fff8e1;
+      color: #ffc107;
+    }
+    
+    .status.error {
+      background-color: #ffebee;
+      color: #f44336;
+    }
+    
+    .last-update {
+      font-size: 12px;
+      color: #666;
+      text-align: right;
+      margin-top: 20px;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    
+    table th, table td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+    
+    table th {
+      background-color: #f9f9f9;
+    }
+    
+    .chart-container {
+      height: 300px;
+      margin-top: 20px;
+    }
+    
+    @media (max-width: 768px) {
+      .dashboard {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <h1>RSS-to-Email Monitoring Dashboard</h1>
+  
+  <div class="dashboard">
+    <div class="card">
+      <h2>Subscribers</h2>
+      <div class="stat" id="subscriber-count">-</div>
+      <p>Total active subscribers</p>
+    </div>
+    
+    <div class="card">
+      <h2>Emails Sent</h2>
+      <div class="stat" id="emails-sent">-</div>
+      <p>Total emails delivered</p>
+    </div>
+    
+    <div class="card">
+      <h2>Service Health</h2>
+      <div id="health-status">
+        <span class="status" id="status-indicator">Loading...</span>
+      </div>
+      <p>Last check: <span id="last-health-check">-</span></p>
+    </div>
+  </div>
+  
+  <div class="card">
+    <h2>Last Post</h2>
+    <div id="last-post">
+      <p><strong>Title:</strong> <span id="post-title">-</span></p>
+      <p><strong>Published:</strong> <span id="post-date">-</span></p>
+      <p><strong>Email Sent:</strong> <span id="email-sent-date">-</span></p>
+    </div>
+  </div>
+  
+  <div class="card">
+    <h2>Recent Subscribers</h2>
+    <table id="subscribers-table">
+      <thead>
+        <tr>
+          <th>Email</th>
+          <th>Subscribed At</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Subscriber data will be inserted here -->
+      </tbody>
+    </table>
+  </div>
+  
+  <div class="card">
+    <h2>Subscriber Growth</h2>
+    <div class="chart-container">
+      <canvas id="subscribers-chart"></canvas>
+    </div>
+  </div>
+  
+  <div class="last-update">
+    Last updated: <span id="update-time"></span>
+    <button onclick="loadData()">Refresh</button>
+  </div>
+  
+  <script>
+    // Format date for display
+    function formatDate(dateString) {
+      if (!dateString) return '-';
+      const date = new Date(dateString);
+      return date.toLocaleString();
+    }
+    
+    // Calculate time ago
+    function timeAgo(dateString) {
+      if (!dateString) return '-';
+      
+      const date = new Date(dateString);
+      const now = new Date();
+      const seconds = Math.floor((now - date) / 1000);
+      
+      if (seconds < 60) return `${seconds} seconds ago`;
+      
+      const minutes = Math.floor(seconds / 60);
+      if (minutes < 60) return `${minutes} minutes ago`;
+      
+      const hours = Math.floor(minutes / 60);
+      if (hours < 24) return `${hours} hours ago`;
+      
+      const days = Math.floor(hours / 24);
+      return `${days} days ago`;
+    }
+    
+    // Update health status indicator
+    function updateHealthStatus(lastHealthCheck) {
+      const statusIndicator = document.getElementById('status-indicator');
+      
+      if (!lastHealthCheck) {
+        statusIndicator.textContent = 'Unknown';
+        statusIndicator.className = 'status warning';
+        return;
+      }
+      
+      const lastCheck = new Date(lastHealthCheck);
+      const now = new Date();
+      const hoursSinceLastCheck = (now - lastCheck) / (1000 * 60 * 60);
+      
+      if (hoursSinceLastCheck < 3) {
+        statusIndicator.textContent = 'Healthy';
+        statusIndicator.className = 'status healthy';
+      } else if (hoursSinceLastCheck < 6) {
+        statusIndicator.textContent = 'Warning';
+        statusIndicator.className = 'status warning';
+      } else {
+        statusIndicator.textContent = 'Error';
+        statusIndicator.className = 'status error';
+      }
+    }
+    
+    // Initialize subscriber growth chart
+    let subscribersChart;
+    
+    function initChart(data) {
+      // Group subscribers by date
+      const subscribersByDate = {};
+      
+      data.subscribers.forEach(sub => {
+        const date = new Date(sub.subscribedAt).toLocaleDateString();
+        subscribersByDate[date] = (subscribersByDate[date] || 0) + 1;
+      });
+      
+      // Convert to arrays for Chart.js
+      const dates = Object.keys(subscribersByDate).sort();
+      const counts = dates.map(date => subscribersByDate[date]);
+      
+      // Calculate cumulative counts
+      const cumulativeCounts = [];
+      let total = 0;
+      for (const count of counts) {
+        total += count;
+        cumulativeCounts.push(total);
+      }
+      
+      // Create or update chart
+      const ctx = document.getElementById('subscribers-chart').getContext('2d');
+      
+      if (subscribersChart) {
+        subscribersChart.data.labels = dates;
+        subscribersChart.data.datasets[0].data = cumulativeCounts;
+        subscribersChart.update();
+      } else {
+        subscribersChart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: dates,
+            datasets: [{
+              label: 'Total Subscribers',
+              data: cumulativeCounts,
+              backgroundColor: 'rgba(61, 90, 254, 0.2)',
+              borderColor: 'rgba(61, 90, 254, 1)',
+              borderWidth: 2,
+              tension: 0.1
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  precision: 0
+                }
+              }
+            }
+          }
+        });
+      }
+    }
+    
+    // Load data from the server
+    async function loadData() {
+      try {
+        const response = await fetch('/data/subscribers.json');
+        const data = await response.json();
+        
+        // Update subscriber count
+        document.getElementById('subscriber-count').textContent = data.subscribers.length;
+        
+        // Update emails sent
+        document.getElementById('emails-sent').textContent = data.stats.totalEmailsSent || 0;
+        
+        // Update health status
+        updateHealthStatus(data.stats.lastHealthCheckPassed);
+        document.getElementById('last-health-check').textContent = timeAgo(data.stats.lastHealthCheckPassed);
+        
+        // Update last post info
+        if (data.lastPost) {
+          document.getElementById('post-title').textContent = data.lastPost.title || '-';
+          document.getElementById('post-date').textContent = formatDate(data.lastPost.publishedAt);
+          document.getElementById('email-sent-date').textContent = formatDate(data.lastPost.emailSentAt);
+        }
+        
+        // Update subscribers table
+        const tableBody = document.getElementById('subscribers-table').getElementsByTagName('tbody')[0];
+        tableBody.innerHTML = '';
+        
+        // Sort subscribers by date (newest first)
+        const sortedSubscribers = [...data.subscribers].sort((a, b) => 
+          new Date(b.subscribedAt) - new Date(a.subscribedAt)
+        );
+        
+        // Show only the 10 most recent subscribers
+        const recentSubscribers = sortedSubscribers.slice(0, 10);
+        
+        recentSubscribers.forEach(sub => {
+          const row = tableBody.insertRow();
+          
+          // Mask email for privacy
+          const email = sub.email;
+          const maskedEmail = email.replace(/(.{3})(.*)(@.*)/, '$1***$3');
+          
+          const cellEmail = row.insertCell(0);
+          cellEmail.textContent = maskedEmail;
+          
+          const cellDate = row.insertCell(1);
+          cellDate.textContent = formatDate(sub.subscribedAt);
+        });
+        
+        // Initialize or update chart
+        initChart(data);
+        
+        // Update last update time
+        document.getElementById('update-time').textContent = new Date().toLocaleString();
+      } catch (error) {
+        console.error('Error loading data:', error);
+      }
+    }
+    
+    // Load data immediately and then every minute
+    loadData();
+    setInterval(loadData, 60000);
+  </script>
+</body>
+</html>
