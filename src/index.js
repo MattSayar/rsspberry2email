@@ -112,12 +112,6 @@ subscriberManager.listenForUnsubscribes();
 // Start health check monitoring
 monitoring.startHealthCheck();
 
-// Initialize backup if enabled
-if (config.backup.enabled) {
-  logger.info('Initializing Google Drive backup');
-  const backup = require('./backup');
-  backup.startBackupSchedule();
-}
 
 // Initialize dashboard server if not in cron mode
 if (process.env.CRON_MODE !== 'true') {

@@ -9,7 +9,6 @@ A lightweight service that monitors an RSS feed for new content and emails subsc
 - **Subscription Management**: Handles subscriber sign-ups and unsubscribes
 - **Anti-Spam Protection**: Includes rate limiting, email validation, and honeypot fields
 - **Monitoring**: Uses ntfy.sh for alerts and health monitoring
-- **Backup**: Optional Google Drive backup for subscriber data
 - **Dashboard**: Simple monitoring dashboard to check service status
 - **Security**: Cloudflare Worker proxy for subscription requests
 
@@ -26,12 +25,12 @@ A lightweight service that monitors an RSS feed for new content and emails subsc
 │  Email      │     │ rsspberry2email│     │  Subscriber   │
 │  Inbox      │◀────│  Service      │◀────│  Management   │
 └─────────────┘     └───────┬───────┘     └───────────────┘
-                            │                     ▲
-                            ▼                     │
-                    ┌───────────────┐     ┌───────────────┐
-                    │  RSS Feed     │     │  Google Drive │
-                    │  Monitoring   │     │  Backup       │
-                    └───────────────┘     └───────────────┘
+                            │
+                            ▼
+                    ┌───────────────┐
+                    │  RSS Feed     │
+                    │  Monitoring   │
+                    └───────────────┘
 ```
 
 ## Prerequisites
@@ -41,7 +40,6 @@ A lightweight service that monitors an RSS feed for new content and emails subsc
 - SendGrid account for email delivery
 - Cloudflare account (for the subscription proxy)
 - ntfy.sh topics for notifications
-- (Optional) Google Drive API credentials for backup
 
 ## Installation
 
@@ -76,10 +74,6 @@ Required environment variables:
 - `NTFY_SUBSCRIBE_TOPIC`: ntfy.sh topic for subscription requests
 - `NTFY_UNSUBSCRIBE_TOPIC`: ntfy.sh topic for unsubscribe requests
 
-Optional environment variables:
-- `GOOGLE_DRIVE_CREDENTIALS_PATH`: Path to Google Drive credentials JSON file
-- `BACKUP_ENABLED`: Set to "true" to enable Google Drive backup
-- `BACKUP_INTERVAL_HOURS`: How often to backup subscriber data
 
 ### 4. Deploy Cloudflare Worker
 
@@ -183,14 +177,6 @@ Copy the `public/subscription-form.html` file to your website and update the API
 </form>
 ```
 
-## Google Drive Backup
-
-If enabled, the service will automatically back up your subscriber data to Google Drive at the configured interval. To set this up:
-
-1. Create a Google Cloud project and enable the Drive API
-2. Create service account credentials and download the JSON file
-3. Place the credentials file in a secure location
-4. Update your .env file with the path to the credentials and set BACKUP_ENABLED=true
 
 ## Monitoring
 
@@ -199,7 +185,6 @@ The service uses ntfy.sh for monitoring and alerts. You'll receive notifications
 - RSS feed errors
 - Email sending failures
 - Service health issues
-- Backup failures
 - New subscriptions and unsubscribes
 
 ## Troubleshooting
@@ -221,10 +206,6 @@ The service uses ntfy.sh for monitoring and alerts. You'll receive notifications
    - Verify Node.js is installed and working
    - Check logs for errors
 
-4. **Backup failures**
-   - Verify Google Drive credentials are correct
-   - Check permissions on the service account
-   - Ensure the credentials file path is correct
 
 ### Logs
 
@@ -234,7 +215,7 @@ Logs are stored in the `logs` directory. Check `app.log` for the most recent act
 
 ### Backing Up Subscribers
 
-The subscribers data is stored in `data/subscribers.json`. In addition to the automatic Google Drive backup (if enabled), consider making manual backups regularly.
+The subscribers data is stored in `data/subscribers.json`. Consider making regular backups of this file.
 
 ### Updating the Service
 

@@ -13,7 +13,6 @@
     "@sendgrid/mail": "^7.7.0",
     "dotenv": "^16.0.3",
     "handlebars": "^4.7.7",
-    "googleapis": "^118.0.0",
     "eventsource": "^2.0.1"
   },
   "author": "",
