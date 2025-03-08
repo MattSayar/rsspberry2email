@@ -4,86 +4,77 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>New Post on Matt Sayar's Blog</title>
-  <style>
-    body {
-      background-color: #121212;
-      color: #e0e0e0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      padding: 20px;
-      max-width: 600px;
-      margin: 0 auto;
-    }
-    .post-title {
-      font-size: 24px;
-      margin-bottom: 16px;
-      color: inherit; /* Ensures title color matches theme */
-    }
-    .post-title-link {
-      text-decoration: none;
-      color: inherit;
-    }
-    .post-title-link:hover {
-      text-decoration: underline;
-    }
-    .post-image-link {
-      display: block;
-      text-decoration: none;
-    }
-    .post-image {
-      width: 100%;
-      max-width: 400px;
-      max-height: 300px;
-      height: auto;
-      object-fit: contain;
-      border-radius: 8px;
-      margin: 0 auto 16px;
-      display: block;
-    }
-    .read-more-button {
-      display: inline-block;
-      background-color: #1a237e;  /* Darker blue background */
-      color: #ffffff;             /* Brighter white text */
-      padding: 12px 24px;         /* Slightly larger padding */
-      text-decoration: none;
-      border-radius: 4px;
-      margin-top: 16px;
-      font-size: 16px;           /* Larger text size */
-      font-weight: 500;          /* Semi-bold text */
-    }
-    .read-more-button:hover {
-      background-color: #283593;  /* Lighter blue on hover */
-    }
-    .footer {
-      margin-top: 30px;
-      font-size: 12px;
-      color: #909090;
-      border-top: 1px solid #303030;
-      padding-top: 16px;
-    }
-    
-    @media (prefers-color-scheme: light) {
-      body {
-        background-color: #ffffff;
-        color: #333333;
-      }
-      .footer {
-        color: #666666;
-        border-top: 1px solid #dddddd;
-      }
-    }
+  <!--[if mso]>
+  <style type="text/css">
+    body, table, td {font-family: Arial, Helvetica, sans-serif !important;}
+    .button {background-color: #3d5afe !important; border-radius: 4px !important; color: #ffffff !important; display: inline-block !important; font-family: sans-serif !important; font-size: 16px !important; font-weight: bold !important; line-height: 50px !important; text-align: center !important; text-decoration: none !important; width: 200px !important; -webkit-text-size-adjust: none !important;}
   </style>
+  <![endif]-->
 </head>
-<body>
-  <a href="{{postUrl}}" class="post-title-link">
-    <h1 class="post-title">{{postTitle}}</h1>
-  </a>
-  <a href="{{postUrl}}" class="post-image-link">
-    <img class="post-image" src="{{postImage}}" alt="{{postTitle}}">
-  </a>
-  <a href="{{postUrl}}" class="read-more-button">Read the full post</a>
-  <div class="footer">
-    <p>You're receiving this because you subscribed to updates from <a href="https://mattsayar.com">mattsayar.com</a></p>
-    <p><a href="{{unsubscribeUrl}}">Unsubscribe</a> with one click</p>
-  </div>
+<body style="background-color: #f7f7f7; margin: 0; padding: 0; -webkit-text-size-adjust: none; -ms-text-size-adjust: none; font-family: Arial, Helvetica, sans-serif;">
+  <!-- Main Container -->
+  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed;">
+    <tr>
+      <td align="center" bgcolor="#f7f7f7" style="padding: 20px 0;">
+        <!-- Email Container -->
+        <table border="0" cellpadding="0" cellspacing="0" width="600" style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+          <tr>
+            <td align="center" style="padding: 30px;">
+              <!-- Content -->
+              <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                <!-- Post Title -->
+                <tr>
+                  <td style="padding: 0 0 20px 0;">
+                    <h1 style="color: #333333; font-family: Arial, Helvetica, sans-serif; font-size: 24px; line-height: 32px; margin: 0; font-weight: bold;">{{postTitle}}</h1>
+                  </td>
+                </tr>
+                
+                <!-- Post Image -->
+                <tr>
+                  <td style="padding: 0 0 25px 0;">
+                    <a href="{{postUrl}}" style="display: block; text-decoration: none;">
+                      <img src="{{postImage}}" alt="{{postTitle}}" width="100%" style="display: block; border: 0; border-radius: 4px; max-width: 100%; height: auto;" />
+                    </a>
+                  </td>
+                </tr>
+                
+                <!-- Read More Button -->
+                <tr>
+                  <td style="padding: 0 0 30px 0;" align="center">
+                    <!--[if mso]>
+                    <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="{{postUrl}}" style="height:50px;v-text-anchor:middle;width:200px;" arcsize="8%" stroke="f" fillcolor="#3d5afe">
+                      <w:anchorlock/>
+                      <center>
+                    <![endif]-->
+                    <a href="{{postUrl}}" style="background-color: #3d5afe; border-radius: 4px; color: #ffffff; display: inline-block; font-family: sans-serif; font-size: 16px; font-weight: bold; line-height: 50px; text-align: center; text-decoration: none; width: 200px; -webkit-text-size-adjust: none;">Read the full post</a>
+                    <!--[if mso]>
+                      </center>
+                    </v:roundrect>
+                    <![endif]-->
+                  </td>
+                </tr>
+                
+                <!-- Footer Divider -->
+                <tr>
+                  <td style="padding: 0 0 20px 0; border-bottom: 1px solid #eeeeee;"></td>
+                </tr>
+                
+                <!-- Footer Text -->
+                <tr>
+                  <td style="padding: 20px 0 0 0; color: #666666; font-family: Arial, Helvetica, sans-serif; font-size: 12px; line-height: 18px;">
+                    <p style="margin: 0 0 10px 0;">You're receiving this because you subscribed to updates from <a href="https://mattsayar.com" style="color: #3d5afe; text-decoration: underline;">mattsayar.com</a></p>
+                    <p style="margin: 0;"><a href="{{unsubscribeUrl}}" style="color: #3d5afe; text-decoration: underline;">Unsubscribe</a> with one click</p>
+                  </td>
+                </tr>
+              </table>
+              <!-- End Content -->
+            </td>
+          </tr>
+        </table>
+        <!-- End Email Container -->
+      </td>
+    </tr>
+  </table>
+  <!-- End Main Container -->
 </body>
 </html>
