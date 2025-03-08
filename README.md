@@ -103,19 +103,6 @@ This script will:
 4. Add a route like `yourdomain.com/api/subscribe*`
 5. Click "Save"
 
-### 5. Set up cron job
-
-Edit your crontab:
-
-```bash
-crontab -e
-```
-
-Add an hourly schedule:
-
-```
-0 * * * * cd /path/to/rsspberry2email && node src/index.js >> logs/app.log 2>&1
-```
 
 
 ## Usage
@@ -187,7 +174,7 @@ The service uses ntfy.sh for monitoring and alerts. You'll receive notifications
    - Verify the API endpoint URL is correct
 
 3. **Service not running**
-   - Check cron job is set up correctly
+   - Check systemd service is running correctly
    - Verify Node.js is installed and working
    - Check logs for errors
 

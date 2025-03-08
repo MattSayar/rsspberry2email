@@ -113,12 +113,10 @@ subscriberManager.listenForUnsubscribes();
 monitoring.startHealthCheck();
 
 
-// Initialize dashboard server if not in cron mode
-if (process.env.CRON_MODE !== 'true') {
-  logger.info('Starting monitoring dashboard');
-  const dashboard = require('./dashboard');
-  dashboard.startDashboard(3000);
-}
+// Initialize dashboard server
+logger.info('Starting monitoring dashboard');
+const dashboard = require('./dashboard');
+dashboard.startDashboard(3000);
 
 // Run the rsspberry2email check immediately on startup
 logger.info('Running initial rsspberry2email check');

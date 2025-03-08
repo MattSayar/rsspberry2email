@@ -87,7 +87,7 @@ echo
 echo "Setup complete! Next steps:"
 echo "1. Edit your .env file if you haven't already"
 echo "2. Deploy the Cloudflare Worker using the instructions in the README"
-echo "3. Set up the systemd service or cron job"
+echo "3. Set up the systemd service"
 echo "4. Test the service with: node scripts/test-email.js your@email.com"
 echo
 
