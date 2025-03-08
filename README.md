@@ -79,7 +79,7 @@ This script will:
 1. In the Cloudflare dashboard, go to "Workers & Pages"
 2. Click on "KV" in the sidebar
 3. Click "Create namespace"
-4. Name it "RATE_LIMIT_NAMESPACE" and click "Add"
+4. Name it "RATE_LIMIT" and click "Add"
 5. Go back to your worker
 6. Click on "Settings" and then "Variables"
 7. Under "KV Namespace Bindings", click "Add binding"

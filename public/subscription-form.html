@@ -78,7 +78,18 @@
     function subscribeUser(event) {
       event.preventDefault();
       
-      const email = document.getElementById('email').value;
+      const emailInput = document.getElementById('email');
+      const email = emailInput.value.trim();
+      
+      // Basic email validation
+      const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      if (!emailRegex.test(email)) {
+        const formMessage = document.querySelector('.form-message');
+        formMessage.textContent = "Please enter a valid email address";
+        formMessage.classList.add('error');
+        emailInput.focus();
+        return;
+      }
       const honeypot = document.getElementById('honeypot').value;
       const formMessage = document.querySelector('.form-message');
       const submitButton = document.querySelector('button[type="submit"]');

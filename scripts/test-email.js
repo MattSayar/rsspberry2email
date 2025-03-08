@@ -54,10 +54,23 @@ async function sendTestEmail(emailAddress) {
 
 // Run test with command line arg: node test-email.js [email@example.com]
 const testEmail = process.argv[2];
+
+// Validate email if provided
 if (testEmail) {
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  if (!emailRegex.test(testEmail)) {
+    console.error('Error: Invalid email address format');
+    process.exit(1);
+  }
   console.log(`Sending test email to: ${testEmail}`);
 } else {
   console.log('Sending test email to all subscribers');
 }
 
-sendTestEmail(testEmail);
+// Execute the test and handle process exit
+sendTestEmail(testEmail).then(() => {
+  console.log('Test completed');
+}).catch(err => {
+  console.error('Test failed with error:', err);
+  process.exit(1);
+});

@@ -127,6 +127,27 @@ const checkIntervalMs = config.rss.checkIntervalHours * 60 * 60 * 1000;
 setInterval(checkAndSendEmails, checkIntervalMs);
 logger.info(`Scheduled rsspberry2email checks every ${config.rss.checkIntervalHours} hour(s)`);
 
+// Handle process signals for graceful shutdown
+process.on('SIGINT', () => {
+  logger.info('Received SIGINT signal. Shutting down gracefully...');
+  // Remove lock file if it exists
+  if (fs.existsSync(LOCK_FILE)) {
+    fs.unlinkSync(LOCK_FILE);
+    logger.info('Removed lock file during shutdown');
+  }
+  process.exit(0);
+});
+
+process.on('SIGTERM', () => {
+  logger.info('Received SIGTERM signal. Shutting down gracefully...');
+  // Remove lock file if it exists
+  if (fs.existsSync(LOCK_FILE)) {
+    fs.unlinkSync(LOCK_FILE);
+    logger.info('Removed lock file during shutdown');
+  }
+  process.exit(0);
+});
+
 // Export for testing purposes
 module.exports = {
   checkAndSendEmails

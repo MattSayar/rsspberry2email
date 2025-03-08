@@ -16,5 +16,18 @@
     "eventsource": "^2.0.1"
   },
   "author": "",
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/rsspberry2email.git"
+  },
+  "keywords": [
+    "rss",
+    "email",
+    "newsletter",
+    "subscription"
+  ],
+  "engines": {
+    "node": ">=16.0.0"
+  }
 }

@@ -56,8 +56,12 @@ async function sendNewPostEmail(subscribers, post) {
       });
   });
   
-  // Send all emails
-  const results = await Promise.all(emailPromises);
+  // Send all emails with proper error handling
+  const results = await Promise.allSettled(emailPromises)
+    .then(outcomes => outcomes.map(outcome => 
+      outcome.status === 'fulfilled' ? outcome.value : 
+      { success: false, email: 'unknown', error: new Error(outcome.reason || 'Unknown error') }
+    ));
   
   // Check for failures
   const failures = results.filter(result => !result.success);

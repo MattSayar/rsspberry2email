@@ -13,6 +13,16 @@ if [ "$EUID" -eq 0 ]; then
   exit 1
 fi
 
+# Check Node.js version
+NODE_VERSION=$(node -v | cut -d 'v' -f 2)
+NODE_MAJOR=$(echo $NODE_VERSION | cut -d '.' -f 1)
+if [ "$NODE_MAJOR" -lt 16 ]; then
+  echo "Error: Node.js v16 or higher is required. Found v$NODE_VERSION"
+  echo "Please upgrade Node.js and try again."
+  exit 1
+fi
+echo "Node.js v$NODE_VERSION detected. ✓"
+
 # Create necessary directories
 echo "Creating directories..."
 mkdir -p data logs
