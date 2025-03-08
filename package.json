@@ -15,11 +15,11 @@
     "handlebars": "^4.7.7",
     "eventsource": "^2.0.1"
   },
-  "author": "",
+  "author": "Matt Sayar",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/rsspberry2email.git"
+    "url": "https://github.com/MattSayar/rsspberry2email.git"
   },
   "keywords": [
     "rss",

@@ -66,6 +66,7 @@ This script will:
 - Set up log rotation
 
 ### 3. Deploy Cloudflare Worker
+Raspberry Pis' architectures (linux arm LE) don't support wrangler CLI-based installs. Following is how to configure Cloudflare via the UI.
 
 1. Log in to your Cloudflare dashboard at https://dash.cloudflare.com/
 2. Navigate to "Workers & Pages" from the sidebar
@@ -107,14 +108,10 @@ This script will:
 
 ## Usage
 
-### Starting the service manually
+### Let systemd handle it
 
 ```bash
-# Run in foreground
-node src/index.js
-
-# Run in background
-nohup node src/index.js > logs/app.log 2>&1 &
+systemctl enable rsspberry2email
 ```
 
 ### Testing Email Delivery
@@ -152,7 +149,7 @@ Copy the `public/subscription-form.html` file to your website and update the API
 
 ## Monitoring
 
-The service uses ntfy.sh for monitoring and alerts. You'll receive notifications for:
+The service uses [ntfy.sh](https://ntfy.sh/), a simple pub/sub service, for functionality, monitoring, and alerts. You'll receive notifications for:
 
 - RSS feed errors
 - Email sending failures
@@ -188,17 +185,6 @@ Logs are stored in the `logs` directory. Check `app.log` for the most recent act
 ### Backing Up Subscribers
 
 The subscribers data is stored in `data/subscribers.json`. Consider making regular backups of this file.
-
-### Updating the Service
-
-To update the service:
-
-```bash
-git pull
-npm install
-```
-
-Then restart the service or wait for the next cron job run.
 
 ## License
 
