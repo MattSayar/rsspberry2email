@@ -50,32 +50,22 @@ git clone https://github.com/yourusername/rsspberry2email.git
 cd rsspberry2email
 ```
 
-### 2. Install dependencies
+### 2. Run the setup script
+
+The setup script will create necessary directories, install dependencies, and set up configuration files:
 
 ```bash
-npm install
+./scripts/setup.sh
 ```
 
-### 3. Configure environment variables
+This script will:
+- Create data and logs directories
+- Install npm dependencies
+- Create a .env file from the template
+- Generate systemd service files
+- Set up log rotation
 
-Copy the example environment file and edit it with your values:
-
-```bash
-cp .env.example .env
-nano .env
-```
-
-Required environment variables:
-- `SENDGRID_API_KEY`: Your SendGrid API key
-- `EMAIL_FROM`: Email address to send from
-- `EMAIL_FROM_NAME`: Name to display in the from field
-- `RSS_FEED_URL`: URL of the RSS feed to monitor
-- `NTFY_ALERT_TOPIC`: ntfy.sh topic for system alerts
-- `NTFY_SUBSCRIBE_TOPIC`: ntfy.sh topic for subscription requests
-- `NTFY_UNSUBSCRIBE_TOPIC`: ntfy.sh topic for unsubscribe requests
-
-
-### 4. Deploy Cloudflare Worker
+### 3. Deploy Cloudflare Worker
 
 1. Log in to your Cloudflare dashboard at https://dash.cloudflare.com/
 2. Navigate to "Workers & Pages" from the sidebar
@@ -127,11 +117,6 @@ Add an hourly schedule:
 0 * * * * cd /path/to/rsspberry2email && node src/index.js >> logs/app.log 2>&1
 ```
 
-### 6. Create required directories
-
-```bash
-mkdir -p data logs
-```
 
 ## Usage
 
