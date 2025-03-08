@@ -38,7 +38,10 @@ mkdir -p data logs
 
 # Find and replace yourdomain.com in all relevant files
 echo "Updating domain references in project files..."
-find src templates public scripts -type f -name "*.js" -o -name "*.html" -o -name "*.css" | xargs sed -i '' "s/yourdomain\.com/$DOMAIN_NAME/g" 2>/dev/null || find src templates public scripts -type f -name "*.js" -o -name "*.html" -o -name "*.css" | xargs sed -i "s/yourdomain\.com/$DOMAIN_NAME/g" 2>/dev/null || true
+# More comprehensive find command to catch all file types
+find src templates public scripts -type f | xargs grep -l "yourdomain\.com" 2>/dev/null | xargs sed -i.bak "s/yourdomain\.com/$DOMAIN_NAME/g" 2>/dev/null || true
+# Clean up backup files created by sed
+find . -name "*.bak" -type f -delete 2>/dev/null
 echo "Domain references updated. ✓"
 
 # Install dependencies
