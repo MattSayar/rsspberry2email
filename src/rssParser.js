@@ -1,16 +1,17 @@
+// rssParser.js
 const fetch = require('node-fetch');
 const xml2js = require('xml2js');
 const config = require('./config');
 const logger = require('./utils/logger');
 
-// Fetch and parse the RSS feed
-async function fetchRssFeed() {
+// Fetch and parse the feed (supports both RSS and Atom formats)
+async function fetchFeed() {
   try {
-    logger.info(`Fetching RSS feed from ${config.rss.feedUrl}`);
+    logger.info(`Fetching feed from ${config.rss.feedUrl}`);
     const response = await fetch(config.rss.feedUrl);
     
     if (!response.ok) {
-      throw new Error(`Failed to fetch RSS feed: ${response.status} ${response.statusText}`);
+      throw new Error(`Failed to fetch feed: ${response.status} ${response.statusText}`);
     }
     
     const xml = await response.text();
@@ -19,48 +20,76 @@ async function fetchRssFeed() {
     const parser = new xml2js.Parser({ explicitArray: false });
     const result = await parser.parseStringPromise(xml);
     
-    logger.info('Successfully fetched and parsed RSS feed');
+    logger.info('Successfully fetched and parsed feed');
     return result;
   } catch (error) {
-    logger.error(`RSS feed error: ${error.message}`);
+    logger.error(`Feed error: ${error.message}`);
     throw error;
   }
 }
 
-// Extract the latest post from the RSS feed
+// Extract the latest post from the feed (handles both RSS and Atom formats)
 async function fetchLatestPost() {
   try {
-    const feed = await fetchRssFeed();
+    const feed = await fetchFeed();
     
-    if (!feed || !feed.rss || !feed.rss.channel || !feed.rss.channel.item) {
-      throw new Error('Invalid RSS feed format');
+    // Determine feed type (RSS or Atom)
+    let items = [];
+    let feedType = '';
+    
+    if (feed.rss && feed.rss.channel) {
+      // RSS format
+      feedType = 'RSS';
+      items = Array.isArray(feed.rss.channel.item) 
+        ? feed.rss.channel.item 
+        : [feed.rss.channel.item];
+    } else if (feed.feed && feed.feed.entry) {
+      // Atom format
+      feedType = 'Atom';
+      items = Array.isArray(feed.feed.entry) 
+        ? feed.feed.entry 
+        : [feed.feed.entry];
+    } else {
+      throw new Error('Unsupported feed format');
     }
     
-    // Handle both array and single item cases
-    const items = Array.isArray(feed.rss.channel.item) 
-      ? feed.rss.channel.item 
-      : [feed.rss.channel.item];
+    if (!items || items.length === 0) {
+      throw new Error('No items found in feed');
+    }
+    
+    logger.info(`Detected ${feedType} feed format with ${items.length} items`);
     
     // Sort by publication date (most recent first)
-    items.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+    // Handle date format differences between RSS and Atom
+    items.sort((a, b) => {
+      const dateA = feedType === 'RSS' ? a.pubDate : a.updated;
+      const dateB = feedType === 'RSS' ? b.pubDate : b.updated;
+      return new Date(dateB) - new Date(dateA);
+    });
     
     // Get the most recent post
     const latestPost = items[0];
     
     // Extract OG image if available
     let ogImage = null;
-    if (latestPost.description && latestPost.description.includes('og:image')) {
+    
+    // Try different approaches to find the image based on feed format
+    if (feedType === 'RSS' && latestPost.description && latestPost.description.includes('og:image')) {
+      // Try to extract from description meta tag
       const match = latestPost.description.match(/<meta property="og:image" content="([^"]+)"/);
       if (match && match[1]) {
         ogImage = match[1];
       }
+    } else if (feedType === 'Atom' && latestPost['media:content']) {
+      // Try to get from media:content
+      ogImage = latestPost['media:content'].$.url;
     }
     
     const post = {
-      id: latestPost.guid || latestPost.link,
+      id: feedType === 'RSS' ? (latestPost.guid || latestPost.link) : latestPost.id,
       title: latestPost.title,
-      link: latestPost.link,
-      pubDate: latestPost.pubDate,
+      link: feedType === 'RSS' ? latestPost.link : latestPost.link.href,
+      pubDate: feedType === 'RSS' ? latestPost.pubDate : latestPost.updated,
       ogImage: ogImage
     };
     
@@ -73,6 +102,6 @@ async function fetchLatestPost() {
 }
 
 module.exports = {
-  fetchRssFeed,
+  fetchFeed,
   fetchLatestPost
 };
