@@ -46,7 +46,7 @@ A lightweight service that monitors an RSS feed for new content and emails subsc
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/yourusername/rsspberry2email.git
+git clone https://github.com/MattSayar/rsspberry2email.git
 cd rsspberry2email
 ```
 
