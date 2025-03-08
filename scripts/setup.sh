@@ -1,10 +1,10 @@
 #!/bin/bash
-# RSS-to-Email Service Setup Script
+# rsspberry2email Service Setup Script
 # Usage: ./scripts/setup.sh
 
 set -e
 
-echo "=== RSS-to-Email Service Setup ==="
+echo "=== rsspberry2email Service Setup ==="
 echo
 
 # Check if running as root
@@ -27,6 +27,9 @@ if [ ! -f .env ]; then
   cp .env.example .env
   echo "Please edit .env file with your actual values:"
   echo "  SENDGRID_API_KEY: Your SendGrid API key"
+  echo "  EMAIL_FROM: Email address to send from"
+  echo "  EMAIL_FROM_NAME: Name to display in the from field"
+  echo "  RSS_FEED_URL: URL of the RSS feed to monitor"
   echo "  NTFY_ALERT_TOPIC: ntfy.sh topic for system alerts"
   echo "  NTFY_SUBSCRIBE_TOPIC: ntfy.sh topic for subscription requests"
   echo "  NTFY_UNSUBSCRIBE_TOPIC: ntfy.sh topic for unsubscribe requests"
@@ -51,11 +54,11 @@ $PWD/logs/app.log {
 EOF
 
 echo "To set up log rotation, run:"
-echo "  sudo cp logrotate.conf /etc/logrotate.d/rss-to-email"
+echo "  sudo cp logrotate.conf /etc/logrotate.d/rsspberry2email"
 
 # Create systemd service file
 echo "Creating systemd service file..."
-cat > rss-to-email.service << EOF
+cat > rsspberry2email.service << EOF
 [Unit]
 Description=RSS to Email Service
 After=network.target
@@ -75,15 +78,15 @@ WantedBy=multi-user.target
 EOF
 
 echo "To install the systemd service, run:"
-echo "  sudo cp rss-to-email.service /etc/systemd/system/"
+echo "  sudo cp rsspberry2email.service /etc/systemd/system/"
 echo "  sudo systemctl daemon-reload"
-echo "  sudo systemctl enable rss-to-email"
-echo "  sudo systemctl start rss-to-email"
+echo "  sudo systemctl enable rsspberry2email"
+echo "  sudo systemctl start rsspberry2email"
 
 echo
 echo "Setup complete! Next steps:"
 echo "1. Edit your .env file if you haven't already"
-echo "2. Deploy the Cloudflare Worker (see scripts/deploy-worker.sh)"
+echo "2. Deploy the Cloudflare Worker using the instructions in the README"
 echo "3. Set up the systemd service or cron job"
 echo "4. Test the service with: node scripts/test-email.js your@email.com"
 echo
