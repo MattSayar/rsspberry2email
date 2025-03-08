@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const fetch = require('node-fetch');
+const EventSource = require('eventsource');
 const config = require('./config');
 const logger = require('./utils/logger');
 
@@ -35,86 +36,99 @@ function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-// Subscribe to the ntfy.sh topic for new subscription requests
-async function listenForSubscriptions() {
+// Subscription listener using EventSource (proper SSE client)
+function listenForSubscriptions() {
   logger.info('Starting subscription listener...');
   
-  try {
-    const response = await fetch(`https://ntfy.sh/${config.notifications.subscribeTopic}/sse`);
-    
-    if (!response.ok) {
-      throw new Error(`Failed to connect to ntfy.sh: ${response.status} ${response.statusText}`);
-    }
-    
-    const reader = response.body.getReader();
-    
-    // Process the SSE stream
-    while (true) {
-      const { value, done } = await reader.read();
-      if (done) break;
+  // Create an SSE client using eventsource package
+  const source = new EventSource(`https://ntfy.sh/${config.notifications.subscribeTopic}/sse`);
+  
+  // Handle messages
+  source.onmessage = async (event) => {
+    try {
+      const data = event.data;
       
-      const message = new TextDecoder().decode(value);
-      // ntfy.sh SSE messages contain multiple lines
-      if (message.includes('event: message')) {
-        // Extract the email from the message
-        const emailMatch = message.match(/data: (.+@.+\..+)/);
-        if (emailMatch && emailMatch[1]) {
-          const email = emailMatch[1].trim();
-          // Validate and add the subscriber
-          if (isValidEmail(email)) {
-            await addSubscriber(email);
-            logger.info(`New subscriber added: ${email}`);
-          } else {
-            logger.warn(`Invalid email received: ${email}`);
-          }
+      // Check if it looks like an email
+      if (data && data.includes('@')) {
+        const email = data.trim();
+        
+        // Validate and add the subscriber
+        if (isValidEmail(email)) {
+          await addSubscriber(email);
+          logger.info(`New subscriber added: ${email}`);
+        } else {
+          logger.warn(`Invalid email received: ${email}`);
         }
       }
+    } catch (error) {
+      logger.error(`Error processing subscription message: ${error.message}`);
     }
-  } catch (error) {
-    logger.error(`Subscription listener error: ${error.message}`);
+  };
+  
+  // Handle errors
+  source.onerror = (error) => {
+    logger.error(`Subscription listener error: ${error.message || 'Unknown error'}`);
+    
+    // Don't send alert for each error, just close and restart after a delay
+    source.close();
+    
     const monitoring = require('./monitoring');
-    monitoring.sendAlert(`Subscription listener error: ${error.message}`);
-    // Attempt to restart the listener after a delay
+    monitoring.sendAlert(`Subscription listener disconnected. Reconnecting...`);
+    
+    // Restart the listener after a delay
     setTimeout(listenForSubscriptions, 10000);
-  }
+  };
+  
+  // Handle connection open
+  source.onopen = () => {
+    logger.info('Subscription listener connected successfully');
+  };
+  
+  return source; // Return the source so it can be closed if needed
 }
 
-// Listen for unsubscribe requests
-async function listenForUnsubscribes() {
+// Unsubscribe listener using EventSource
+function listenForUnsubscribes() {
   logger.info('Starting unsubscribe listener...');
   
-  try {
-    const response = await fetch(`https://ntfy.sh/${config.notifications.unsubscribeTopic}/sse`);
-    
-    if (!response.ok) {
-      throw new Error(`Failed to connect to ntfy.sh: ${response.status} ${response.statusText}`);
-    }
-    
-    const reader = response.body.getReader();
-    
-    while (true) {
-      const { value, done } = await reader.read();
-      if (done) break;
+  // Create an SSE client using eventsource package
+  const source = new EventSource(`https://ntfy.sh/${config.notifications.unsubscribeTopic}/sse`);
+  
+  // Handle messages
+  source.onmessage = async (event) => {
+    try {
+      const token = event.data.trim();
       
-      const message = new TextDecoder().decode(value);
-      if (message.includes('event: message')) {
-        // Extract the token from the message
-        const tokenMatch = message.match(/data: (.+)/);
-        if (tokenMatch && tokenMatch[1]) {
-          const token = tokenMatch[1].trim();
-          // Process the unsubscribe
-          const success = await removeSubscriber(token);
-          logger.info(`Unsubscribe request for token ${token}: ${success ? 'successful' : 'not found'}`);
-        }
+      if (token) {
+        // Process the unsubscribe
+        const success = await removeSubscriber(token);
+        logger.info(`Unsubscribe request for token ${token}: ${success ? 'successful' : 'not found'}`);
       }
+    } catch (error) {
+      logger.error(`Error processing unsubscribe message: ${error.message}`);
     }
-  } catch (error) {
-    logger.error(`Unsubscribe listener error: ${error.message}`);
+  };
+  
+  // Handle errors
+  source.onerror = (error) => {
+    logger.error(`Unsubscribe listener error: ${error.message || 'Unknown error'}`);
+    
+    // Don't send alert for each error, just close and restart after a delay
+    source.close();
+    
     const monitoring = require('./monitoring');
-    monitoring.sendAlert(`Unsubscribe listener error: ${error.message}`);
-    // Attempt to restart the listener after a delay
+    monitoring.sendAlert(`Unsubscribe listener disconnected. Reconnecting...`);
+    
+    // Restart the listener after a delay
     setTimeout(listenForUnsubscribes, 10000);
-  }
+  };
+  
+  // Handle connection open
+  source.onopen = () => {
+    logger.info('Unsubscribe listener connected successfully');
+  };
+  
+  return source; // Return the source so it can be closed if needed
 }
 
 // Get all subscribers
