@@ -2,7 +2,6 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const fetch = require('node-fetch');
-const EventSource = require('eventsource');
 const config = require('./config');
 const logger = require('./utils/logger');
 
@@ -33,102 +32,188 @@ if (!fs.existsSync(SUBSCRIBERS_FILE)) {
 
 // Validate email format
 function isValidEmail(email) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email);
 }
 
-// Subscription listener using EventSource (proper SSE client)
-function listenForSubscriptions() {
+// Subscribe to the ntfy.sh topic for new subscription requests
+async function listenForSubscriptions() {
   logger.info('Starting subscription listener...');
   
-  // Create an SSE client using eventsource package
-  const source = new EventSource(`https://ntfy.sh/${config.notifications.subscribeTopic}/sse`);
-  
-  // Handle messages
-  source.onmessage = async (event) => {
-    try {
-      const data = event.data;
+  try {
+    const response = await fetch(`https://ntfy.sh/${config.notifications.subscribeTopic}/sse`);
+    
+    if (!response.ok) {
+      throw new Error(`Failed to connect to ntfy.sh: ${response.status} ${response.statusText}`);
+    }
+    
+    logger.info('Subscription listener connected successfully');
+    
+    // Use a different approach to read the stream
+    response.body.on('data', (chunk) => {
+      const message = chunk.toString();
+      logger.debug(`Received message: ${message}`);
       
-      // Check if it looks like an email
-      if (data && data.includes('@')) {
-        const email = data.trim();
-        
-        // Validate and add the subscriber
-        if (isValidEmail(email)) {
-          await addSubscriber(email);
-          logger.info(`New subscriber added: ${email}`);
-        } else {
-          logger.warn(`Invalid email received: ${email}`);
+      // Check if it starts with "data: " and contains JSON
+      if (message.trim().startsWith('data:')) {
+        try {
+          // Extract everything after "data: "
+          const jsonStr = message.trim().substring(6);
+          logger.debug(`Extracted JSON: ${jsonStr}`);
+          
+          const jsonData = JSON.parse(jsonStr);
+          logger.debug(`Parsed JSON: ${JSON.stringify(jsonData)}`);
+          
+          if (jsonData.message) {
+            const email = jsonData.message;
+            logger.debug(`Found email: ${email}`);
+            
+            if (isValidEmail(email)) {
+              const result = addSubscriber(email);
+              logger.info(`Added subscriber result: ${result}`);
+            } else {
+              logger.warn(`Invalid email format: ${email}`);
+            }
+          } else {
+            logger.warn(`No message field in JSON: ${JSON.stringify(jsonData)}`);
+          }
+        } catch (error) {
+          logger.error(`Error processing message: ${error.message}`);
         }
       }
-    } catch (error) {
-      logger.error(`Error processing subscription message: ${error.message}`);
-    }
-  };
-  
-  // Handle errors
-  source.onerror = (error) => {
-    logger.error(`Subscription listener error: ${error.message || 'Unknown error'}`);
+    });
     
-    // Don't send alert for each error, just close and restart after a delay
-    source.close();
+    // Handle end of stream
+    response.body.on('end', () => {
+      logger.warn('Subscription listener stream ended');
+      // Restart the listener
+      setTimeout(listenForSubscriptions, 10000);
+    });
     
+    // Handle errors
+    response.body.on('error', (error) => {
+      logger.error(`Subscription listener stream error: ${error.message}`);
+      // Restart the listener
+      setTimeout(listenForSubscriptions, 10000);
+    });
+    
+  } catch (error) {
+    logger.error(`Subscription listener error: ${error.message}`);
     const monitoring = require('./monitoring');
-    monitoring.sendAlert(`Subscription listener disconnected. Reconnecting...`);
-    
-    // Restart the listener after a delay
+    monitoring.sendAlert(`Subscription listener error: ${error.message}`);
+    // Attempt to restart the listener after a delay
     setTimeout(listenForSubscriptions, 10000);
-  };
-  
-  // Handle connection open
-  source.onopen = () => {
-    logger.info('Subscription listener connected successfully');
-  };
-  
-  return source; // Return the source so it can be closed if needed
+  }
 }
 
-// Unsubscribe listener using EventSource
-function listenForUnsubscribes() {
+// Listen for unsubscribe requests
+async function listenForUnsubscribes() {
   logger.info('Starting unsubscribe listener...');
   
-  // Create an SSE client using eventsource package
-  const source = new EventSource(`https://ntfy.sh/${config.notifications.unsubscribeTopic}/sse`);
-  
-  // Handle messages
-  source.onmessage = async (event) => {
-    try {
-      const token = event.data.trim();
-      
-      if (token) {
-        // Process the unsubscribe
-        const success = await removeSubscriber(token);
-        logger.info(`Unsubscribe request for token ${token}: ${success ? 'successful' : 'not found'}`);
-      }
-    } catch (error) {
-      logger.error(`Error processing unsubscribe message: ${error.message}`);
+  try {
+    const response = await fetch(`https://ntfy.sh/${config.notifications.unsubscribeTopic}/sse`);
+    
+    if (!response.ok) {
+      throw new Error(`Failed to connect to ntfy.sh: ${response.status} ${response.statusText}`);
     }
-  };
-  
-  // Handle errors
-  source.onerror = (error) => {
-    logger.error(`Unsubscribe listener error: ${error.message || 'Unknown error'}`);
     
-    // Don't send alert for each error, just close and restart after a delay
-    source.close();
-    
-    const monitoring = require('./monitoring');
-    monitoring.sendAlert(`Unsubscribe listener disconnected. Reconnecting...`);
-    
-    // Restart the listener after a delay
-    setTimeout(listenForUnsubscribes, 10000);
-  };
-  
-  // Handle connection open
-  source.onopen = () => {
     logger.info('Unsubscribe listener connected successfully');
-  };
-  
-  return source; // Return the source so it can be closed if needed
+    
+    response.body.on('data', (chunk) => {
+      const message = chunk.toString();
+      
+      // Skip logging for keepalive events
+      if (!message.includes('event: keepalive')) {
+        logger.info(`Received message: ${message}`);
+      }
+      
+      if (message.includes('message')) {
+        try {          
+          // Direct regex extraction - as simple as possible
+          const tokenMatch = message.match(/"message":"([^"]+)"/);
+          
+          if (tokenMatch && tokenMatch[1]) {
+            const token = tokenMatch[1];
+            logger.debug(`Extracted token: ${token}`);
+            
+            // Handle the unsubscribe
+            const success = directUnsubscribe(token);
+            logger.info(`Unsubscribe result: ${success ? 'SUCCESS' : 'FAILED'}`);
+          } else {
+            logger.warn('Could not extract token from message');
+          }
+        } catch (error) {
+          logger.error(`Error handling unsubscribe: ${error.message}`);
+        }
+      }
+    });
+    
+    // Handle stream end and errors
+    response.body.on('end', () => {
+      logger.warn('Unsubscribe listener stream ended');
+      setTimeout(listenForUnsubscribes, 5000);
+    });
+    
+    response.body.on('error', (error) => {
+      logger.error(`Unsubscribe listener stream error: ${error.message}`);
+      setTimeout(listenForUnsubscribes, 5000);
+    });
+    
+  } catch (error) {
+    logger.error(`Unsubscribe listener connection error: ${error.message}`);
+    const monitoring = require('./monitoring');
+    monitoring.sendAlert(`Unsubscribe listener error: ${error.message}`);
+    setTimeout(listenForUnsubscribes, 5000);
+  }
+}
+
+// Direct unsubscribe with maximum safety
+function directUnsubscribe(token) {
+  try {
+    logger.info(`Starting direct unsubscribe for token: ${token}`);
+    
+    // Read file and create backup
+    const fileContents = fs.readFileSync(SUBSCRIBERS_FILE, 'utf8');
+    fs.writeFileSync(`${SUBSCRIBERS_FILE}.bak`, fileContents);
+    logger.info('Created backup file');
+    
+    // Parse data
+    let data;
+    try {
+      data = JSON.parse(fileContents);
+      logger.info(`Parsed subscribers data with ${data.subscribers.length} subscribers`);
+    } catch (parseError) {
+      logger.error(`Failed to parse JSON: ${parseError.message}`);
+      return false;
+    }
+    
+    // Find and remove subscriber
+    const initialCount = data.subscribers.length;
+    const subscriberIndex = data.subscribers.findIndex(sub => sub.unsubscribeToken === token);
+    
+    if (subscriberIndex !== -1) {
+      // Found the subscriber - log and remove
+      const subscriber = data.subscribers[subscriberIndex];
+      logger.info(`Found subscriber at index ${subscriberIndex}: ${subscriber.email}`);
+      
+      // Remove subscriber
+      data.subscribers.splice(subscriberIndex, 1);
+      logger.info(`Removed subscriber from array, new count: ${data.subscribers.length}`);
+      
+      // Write to temporary file first, then rename for atomic write
+      const tempFile = `${SUBSCRIBERS_FILE}.tmp`;
+      fs.writeFileSync(tempFile, JSON.stringify(data, null, 2));
+      fs.renameSync(tempFile, SUBSCRIBERS_FILE);
+      
+      logger.info('Successfully saved updated subscribers file');
+      return true;
+    } else {
+      logger.warn(`No subscriber found with token: ${token}`);
+      return false;
+    }
+  } catch (error) {
+    logger.error(`Direct unsubscribe error: ${error.message}`);
+    return false;
+  }
 }
 
 // Get all subscribers
