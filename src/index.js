@@ -34,26 +34,51 @@ async function checkAndSendEmails() {
   
   try {
     // Check RSS feed for new posts
-    logger.info('Fetching latest post from RSS feed');
+    logger.info('Fetching latest post from feed');
     const latestPost = await rssParser.fetchLatestPost();
     const lastPost = subscriberManager.getLastPost();
     
     // Determine if there's a new post to send
     if (latestPost && (!lastPost || latestPost.id !== lastPost.id)) {
-      logger.info(`New post detected: ${latestPost.title}`);
+      logger.info(`Detected post: ${latestPost.title}`);
       
-      // Get subscribers
-      const subscribers = subscriberManager.getSubscribers();
-      if (subscribers.length === 0) {
-        logger.info('No subscribers to send to');
-      } else {
-        // Send emails
-        logger.info(`Sending emails to ${subscribers.length} subscribers`);
-        await emailSender.sendNewPostEmail(subscribers, latestPost);
-        logger.info(`Email sending complete`);
-        
-        // Update last post information
+      if (!lastPost) {
+        // If there's no last post record, this is likely a first run or after database reset
+        // Just save this as the latest post without sending emails
+        logger.info('No previous post record found. Storing current post without sending emails.');
         subscriberManager.updateLastPost(latestPost);
+      } else {
+        // Check the published dates to determine if it's truly a new post
+        const latestPostDate = new Date(latestPost.pubDate);
+        const lastPostDate = new Date(lastPost.publishedAt);
+        
+        // Only consider it a new post if it was published AFTER the previously recorded post
+        // Use a small buffer (e.g., 1 minute) to handle slight timestamp variations
+        const isNewerPost = latestPostDate > new Date(lastPostDate.getTime() + 60000);
+        
+        if (isNewerPost) {
+          logger.info(`New post detected: ${latestPost.title}`);
+          
+          // Get subscribers
+          const subscribers = subscriberManager.getSubscribers();
+          if (subscribers.length === 0) {
+            logger.info('No subscribers to send to');
+          } else {
+            // Send emails
+            logger.info(`Sending emails to ${subscribers.length} subscribers`);
+            await emailSender.sendNewPostEmail(subscribers, latestPost);
+            logger.info(`Email sending complete`);
+          }
+          
+          // Update last post information
+          subscriberManager.updateLastPost(latestPost);
+        } else {
+          logger.info(`Post "${latestPost.title}" is not newer than the last processed post. Skipping email.`);
+          
+          // Still update the record if the ID is different but date is not newer
+          // This handles cases where the CMS updates post IDs without changing content
+          subscriberManager.updateLastPost(latestPost);
+        }
       }
     } else {
       logger.info('No new posts found');
@@ -94,7 +119,7 @@ if (config.backup.enabled) {
   backup.startBackupSchedule();
 }
 
-// Start dashboard server if not running in cron mode
+// Initialize dashboard server if not in cron mode
 if (process.env.CRON_MODE !== 'true') {
   logger.info('Starting monitoring dashboard');
   const dashboard = require('./dashboard');
@@ -104,6 +129,11 @@ if (process.env.CRON_MODE !== 'true') {
 // Run the RSS check immediately on startup
 logger.info('Running initial RSS check');
 checkAndSendEmails();
+
+// Setup scheduled checks based on config
+const checkIntervalMs = config.rss.checkIntervalHours * 60 * 60 * 1000;
+setInterval(checkAndSendEmails, checkIntervalMs);
+logger.info(`Scheduled RSS checks every ${config.rss.checkIntervalHours} hour(s)`);
 
 // Export for testing purposes
 module.exports = {
