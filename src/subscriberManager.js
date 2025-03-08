@@ -69,7 +69,7 @@ async function listenForSubscriptions() {
             
             if (isValidEmail(email)) {
               const result = addSubscriber(email);
-              logger.info(`Added subscriber result: ${result}`);
+              logger.debug(`Added subscriber result: ${result}`);
             } else {
               logger.warn(`Invalid email format: ${email}`);
             }
@@ -123,7 +123,7 @@ async function listenForUnsubscribes() {
       
       // Skip logging for keepalive events
       if (!message.includes('event: keepalive')) {
-        logger.info(`Received message: ${message}`);
+        logger.debug(`Received message: ${message}`);
       }
       
       if (message.includes('message')) {
@@ -174,13 +174,13 @@ function directUnsubscribe(token) {
     // Read file and create backup
     const fileContents = fs.readFileSync(SUBSCRIBERS_FILE, 'utf8');
     fs.writeFileSync(`${SUBSCRIBERS_FILE}.bak`, fileContents);
-    logger.info('Created backup file');
+    logger.debug('Created backup file');
     
     // Parse data
     let data;
     try {
       data = JSON.parse(fileContents);
-      logger.info(`Parsed subscribers data with ${data.subscribers.length} subscribers`);
+      logger.debug(`Parsed subscribers data with ${data.subscribers.length} subscribers`);
     } catch (parseError) {
       logger.error(`Failed to parse JSON: ${parseError.message}`);
       return false;
@@ -193,18 +193,18 @@ function directUnsubscribe(token) {
     if (subscriberIndex !== -1) {
       // Found the subscriber - log and remove
       const subscriber = data.subscribers[subscriberIndex];
-      logger.info(`Found subscriber at index ${subscriberIndex}: ${subscriber.email}`);
+      logger.debug(`Found subscriber at index ${subscriberIndex}: ${subscriber.email}`);
       
       // Remove subscriber
       data.subscribers.splice(subscriberIndex, 1);
-      logger.info(`Removed subscriber from array, new count: ${data.subscribers.length}`);
+      logger.debug(`Removed subscriber from array, new count: ${data.subscribers.length}`);
       
       // Write to temporary file first, then rename for atomic write
       const tempFile = `${SUBSCRIBERS_FILE}.tmp`;
       fs.writeFileSync(tempFile, JSON.stringify(data, null, 2));
       fs.renameSync(tempFile, SUBSCRIBERS_FILE);
       
-      logger.info('Successfully saved updated subscribers file');
+      logger.debug('Successfully saved updated subscribers file');
       return true;
     } else {
       logger.warn(`No subscriber found with token: ${token}`);
@@ -269,7 +269,7 @@ function removeSubscriber(token) {
     // Save updated data if a subscriber was removed
     if (data.subscribers.length < initialCount) {
       fs.writeFileSync(SUBSCRIBERS_FILE, JSON.stringify(data, null, 2));
-      logger.info(`Removed subscriber with token: ${token}`);
+      logger.debug(`Removed subscriber with token: ${token}`);
       return true;
     }
     
