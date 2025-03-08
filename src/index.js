@@ -7,12 +7,12 @@ const monitoring = require('./monitoring');
 const logger = require('./utils/logger');
 const config = require('./config');
 
-// Lock file path
+// Lock file path for rsspberry2email
 const LOCK_FILE = path.join(__dirname, '../data', 'process.lock');
 
 // Main function to check RSS and send emails
 async function checkAndSendEmails() {
-  logger.info('Starting RSS check process');
+  logger.info('Starting rsspberry2email check process');
   
   // Check if another process is running
   if (fs.existsSync(LOCK_FILE)) {
@@ -91,8 +91,8 @@ async function checkAndSendEmails() {
     fs.unlinkSync(LOCK_FILE);
     logger.info('Removed lock file');
   } catch (error) {
-    logger.error(`Error in RSS check process: ${error.message}`);
-    monitoring.sendAlert(`RSS check process failed: ${error.message}`);
+    logger.error(`Error in rsspberry2email check process: ${error.message}`);
+    monitoring.sendAlert(`rsspberry2email check process failed: ${error.message}`);
     
     // Make sure to remove the lock file even if there's an error
     if (fs.existsSync(LOCK_FILE)) {
@@ -126,14 +126,14 @@ if (process.env.CRON_MODE !== 'true') {
   dashboard.startDashboard(3000);
 }
 
-// Run the RSS check immediately on startup
-logger.info('Running initial RSS check');
+// Run the rsspberry2email check immediately on startup
+logger.info('Running initial rsspberry2email check');
 checkAndSendEmails();
 
 // Setup scheduled checks based on config
 const checkIntervalMs = config.rss.checkIntervalHours * 60 * 60 * 1000;
 setInterval(checkAndSendEmails, checkIntervalMs);
-logger.info(`Scheduled RSS checks every ${config.rss.checkIntervalHours} hour(s)`);
+logger.info(`Scheduled rsspberry2email checks every ${config.rss.checkIntervalHours} hour(s)`);
 
 // Export for testing purposes
 module.exports = {
