@@ -1,5 +1,5 @@
 {
-  "name": "rss-to-email",
+  "name": "rsspberry2email",
   "version": "1.0.0",
   "description": "A lightweight service that monitors an RSS feed and emails subscribers when new posts are published",
   "main": "src/index.js",

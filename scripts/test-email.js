@@ -3,7 +3,7 @@ const emailSender = require('../src/emailSender');
 const subscriberManager = require('../src/subscriberManager');
 const logger = require('../src/utils/logger');
 
-// Override RSS feed with test data
+// Override rsspberry2email feed with test data
 const testPost = {
   id: 'test-post-' + Date.now(),
   title: 'Test Post Title',
@@ -14,7 +14,7 @@ const testPost = {
 
 // Send test email to specified address or all subscribers
 async function sendTestEmail(emailAddress) {
-  logger.info('Starting test email send');
+  logger.info('Starting rsspberry2email test email send');
   
   try {
     const subscribers = emailAddress ? 
