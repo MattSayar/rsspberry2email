@@ -7,9 +7,9 @@ const logger = require('../src/utils/logger');
 const testPost = {
   id: 'test-post-' + Date.now(),
   title: 'Test Post Title',
-  link: 'https://mattsayar.com/test-post',
+  link: 'https://yourdomain.com/test-post',
   pubDate: new Date().toISOString(),
-  ogImage: 'https://mattsayar.com/media/website/logo.png'
+  ogImage: 'https://yourdomain.com/images/logo.png'
 };
 
 // Send test email to specified address or all subscribers

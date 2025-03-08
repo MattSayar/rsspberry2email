@@ -1,14 +1,16 @@
-# RSS-to-Email Service
+# rsspberry2email Service
 
 A lightweight service that monitors an RSS feed for new content and emails subscribers when new posts are published. The service also manages email subscriptions through a simple form that can be embedded on a website, with a Cloudflare Worker acting as a secure proxy for subscription requests.
 
 ## Features
 
-- **RSS Monitoring**: Checks the RSS feed hourly for new posts
+- **RSS Monitoring**: Checks the RSS feed at configurable intervals for new posts
 - **Email Notifications**: Sends styled HTML emails to subscribers when new content is published
 - **Subscription Management**: Handles subscriber sign-ups and unsubscribes
 - **Anti-Spam Protection**: Includes rate limiting, email validation, and honeypot fields
 - **Monitoring**: Uses ntfy.sh for alerts and health monitoring
+- **Backup**: Optional Google Drive backup for subscriber data
+- **Dashboard**: Simple monitoring dashboard to check service status
 - **Security**: Cloudflare Worker proxy for subscription requests
 
 ## Architecture
@@ -21,15 +23,15 @@ A lightweight service that monitors an RSS feed for new content and emails subsc
                                                   │
                                                   ▼
 ┌─────────────┐     ┌───────────────┐     ┌───────────────┐
-│  Email      │     │  RSS-to-Email │     │  Subscriber   │
+│  Email      │     │ rsspberry2email│     │  Subscriber   │
 │  Inbox      │◀────│  Service      │◀────│  Management   │
 └─────────────┘     └───────┬───────┘     └───────────────┘
-                            │
-                            ▼
-                    ┌───────────────┐
-                    │  RSS Feed     │
-                    │  Monitoring   │
-                    └───────────────┘
+                            │                     ▲
+                            ▼                     │
+                    ┌───────────────┐     ┌───────────────┐
+                    │  RSS Feed     │     │  Google Drive │
+                    │  Monitoring   │     │  Backup       │
+                    └───────────────┘     └───────────────┘
 ```
 
 ## Prerequisites
@@ -39,14 +41,15 @@ A lightweight service that monitors an RSS feed for new content and emails subsc
 - SendGrid account for email delivery
 - Cloudflare account (for the subscription proxy)
 - ntfy.sh topics for notifications
+- (Optional) Google Drive API credentials for backup
 
 ## Installation
 
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/yourusername/rss2email.git
-cd rss-to-email
+git clone https://github.com/yourusername/rsspberry2email.git
+cd rsspberry2email
 ```
 
 ### 2. Install dependencies
@@ -66,40 +69,55 @@ nano .env
 
 Required environment variables:
 - `SENDGRID_API_KEY`: Your SendGrid API key
+- `EMAIL_FROM`: Email address to send from
+- `EMAIL_FROM_NAME`: Name to display in the from field
+- `RSS_FEED_URL`: URL of the RSS feed to monitor
 - `NTFY_ALERT_TOPIC`: ntfy.sh topic for system alerts
 - `NTFY_SUBSCRIBE_TOPIC`: ntfy.sh topic for subscription requests
 - `NTFY_UNSUBSCRIBE_TOPIC`: ntfy.sh topic for unsubscribe requests
 
+Optional environment variables:
+- `GOOGLE_DRIVE_CREDENTIALS_PATH`: Path to Google Drive credentials JSON file
+- `BACKUP_ENABLED`: Set to "true" to enable Google Drive backup
+- `BACKUP_INTERVAL_HOURS`: How often to backup subscriber data
+
 ### 4. Deploy Cloudflare Worker
 
-Install Wrangler CLI:
+1. Log in to your Cloudflare dashboard at https://dash.cloudflare.com/
+2. Navigate to "Workers & Pages" from the sidebar
+3. Click "Create application" and select "Create Worker"
+4. Give your worker a name (e.g., "subscribe-proxy")
+5. In the editor, paste the code from `subscribe-proxy/index.js`
+6. Click "Save and Deploy"
 
-```bash
-npm install -g wrangler
-```
+#### Set up KV namespace for rate limiting:
 
-Login to Cloudflare:
+1. In the Cloudflare dashboard, go to "Workers & Pages"
+2. Click on "KV" in the sidebar
+3. Click "Create namespace"
+4. Name it "RATE_LIMIT" and click "Add"
+5. Go back to your worker
+6. Click on "Settings" and then "Variables"
+7. Under "KV Namespace Bindings", click "Add binding"
+8. Set the Variable name to "RATE_LIMIT_NAMESPACE" and select your KV namespace
+9. Click "Save"
 
-```bash
-wrangler login
-```
+#### Configure environment variables:
 
-Create a KV namespace for rate limiting:
+1. Still in your worker's "Variables" settings
+2. Under "Environment Variables", click "Add variable"
+3. Add the following variables:
+   - `NTFY_TOPIC`: Your ntfy.sh subscription topic
+   - `ALLOWED_ORIGIN`: Your website domain (e.g., "https://yourdomain.com")
+4. Click "Save"
 
-```bash
-wrangler kv:namespace create "RATE_LIMIT"
-```
+#### Set up a route:
 
-Update the `subscribe-proxy/wrangler.toml` file with your KV namespace ID and ntfy.sh topic.
-
-Deploy the worker:
-
-```bash
-cd subscribe-proxy
-wrangler publish
-```
-
-Configure a route in the Cloudflare dashboard to point `yourdomain.com/api/subscribe` to your worker.
+1. Go to "Workers & Pages" in the dashboard
+2. Click on your worker
+3. Go to "Triggers" and click "Add route"
+4. Add a route like `yourdomain.com/api/subscribe*`
+5. Click "Save"
 
 ### 5. Set up cron job
 
@@ -112,10 +130,26 @@ crontab -e
 Add an hourly schedule:
 
 ```
-0 * * * * cd /path/to/rss-to-email && node src/index.js >> logs/app.log 2>&1
+0 * * * * cd /path/to/rsspberry2email && node src/index.js >> logs/app.log 2>&1
+```
+
+### 6. Create required directories
+
+```bash
+mkdir -p data logs
 ```
 
 ## Usage
+
+### Starting the service manually
+
+```bash
+# Run in foreground
+node src/index.js
+
+# Run in background
+nohup node src/index.js > logs/app.log 2>&1 &
+```
 
 ### Testing Email Delivery
 
@@ -129,9 +163,34 @@ npm test
 node scripts/test-email.js test@example.com
 ```
 
+### Monitoring Dashboard
+
+The service includes a simple monitoring dashboard that shows:
+- Service status
+- Last successful check
+- Subscriber count
+- Last post information
+
+Access it at `http://your-server-ip:3000/dashboard.html`
+
 ### Embedding the Subscription Form
 
-Copy the `public/subscription-form.html` file to your website and update the API endpoint URL to match your Cloudflare Worker.
+Copy the `public/subscription-form.html` file to your website and update the API endpoint URL in the JavaScript fetch call to match your Cloudflare Worker endpoint:
+
+```html
+<form id="subscription-form" action="https://yourdomain.com/api/subscribe" method="post">
+  <!-- Form content -->
+</form>
+```
+
+## Google Drive Backup
+
+If enabled, the service will automatically back up your subscriber data to Google Drive at the configured interval. To set this up:
+
+1. Create a Google Cloud project and enable the Drive API
+2. Create service account credentials and download the JSON file
+3. Place the credentials file in a secure location
+4. Update your .env file with the path to the credentials and set BACKUP_ENABLED=true
 
 ## Monitoring
 
@@ -140,6 +199,8 @@ The service uses ntfy.sh for monitoring and alerts. You'll receive notifications
 - RSS feed errors
 - Email sending failures
 - Service health issues
+- Backup failures
+- New subscriptions and unsubscribes
 
 ## Troubleshooting
 
@@ -160,6 +221,11 @@ The service uses ntfy.sh for monitoring and alerts. You'll receive notifications
    - Verify Node.js is installed and working
    - Check logs for errors
 
+4. **Backup failures**
+   - Verify Google Drive credentials are correct
+   - Check permissions on the service account
+   - Ensure the credentials file path is correct
+
 ### Logs
 
 Logs are stored in the `logs` directory. Check `app.log` for the most recent activity.
@@ -168,7 +234,7 @@ Logs are stored in the `logs` directory. Check `app.log` for the most recent act
 
 ### Backing Up Subscribers
 
-The subscribers data is stored in `data/subscribers.json`. Back up this file regularly.
+The subscribers data is stored in `data/subscribers.json`. In addition to the automatic Google Drive backup (if enabled), consider making manual backups regularly.
 
 ### Updating the Service
 
