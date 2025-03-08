@@ -22,8 +22,8 @@ module.exports = {
     checkIntervalHours: 1
   },
   email: {
-    from: 'updates@mattsayar.com',
-    subject: 'New Post on Matt Sayar\'s Blog',
+    from: 'matt@mattsayar.com',
+    subject: 'New Post from Matt Sayar',
     sendgridApiKey: process.env.SENDGRID_API_KEY
   },
   notifications: {

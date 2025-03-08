@@ -715,7 +715,7 @@ async function sendNewPostEmail(subscribers, post) {
     // Render email template
     const html = template({
       postTitle: post.title,
-      postImage: post.ogImage || 'https://mattsayar.com/default-image.jpg',
+      postImage: post.ogImage || 'https://mattsayar.com/media/website/logo.png',
       postUrl: post.link,
       unsubscribeUrl: generateUnsubscribeUrl(subscriber.unsubscribeToken)
     });

@@ -15,7 +15,7 @@ const template = Handlebars.compile(templateSource);
 
 // Generate unsubscribe URL
 function generateUnsubscribeUrl(token) {
-  return `https://ntfy.sh/${config.notifications.unsubscribeTopic}?c=Unsubscribe&t=${encodeURIComponent(token)}&action=view&redirect=https://mattsayar.com/unsubscribed.html`;
+  return `https://ntfy.sh/${config.notifications.unsubscribeTopic}?c=Unsubscribe&t=${encodeURIComponent(token)}&action=view&redirect=https://mattsayar.com/unsubscribed`;
 }
 
 // Send new post notification emails
@@ -27,7 +27,7 @@ async function sendNewPostEmail(subscribers, post) {
     // Render email template
     const html = template({
       postTitle: post.title,
-      postImage: post.ogImage || 'https://mattsayar.com/default-image.jpg',
+      postImage: post.ogImage || 'https://mattsayar.com/media/website/logo.png',
       postUrl: post.link,
       unsubscribeUrl: generateUnsubscribeUrl(subscriber.unsubscribeToken)
     });

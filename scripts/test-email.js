@@ -9,7 +9,7 @@ const testPost = {
   title: 'Test Post Title',
   link: 'https://mattsayar.com/test-post',
   pubDate: new Date().toISOString(),
-  ogImage: 'https://mattsayar.com/test-image.jpg'
+  ogImage: 'https://mattsayar.com/media/website/logo.png'
 };
 
 // Send test email to specified address or all subscribers
