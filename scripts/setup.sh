@@ -7,6 +7,15 @@ set -e
 echo "=== rsspberry2email Service Setup ==="
 echo
 
+# Prompt for domain name
+read -p "Enter your domain name (without http/https, e.g. example.com): " DOMAIN_NAME
+if [ -z "$DOMAIN_NAME" ]; then
+  echo "Error: Domain name cannot be empty."
+  exit 1
+fi
+echo "Using domain: $DOMAIN_NAME ✓"
+echo
+
 # Check if running as root
 if [ "$EUID" -eq 0 ]; then
   echo "Please run this script as a regular user, not as root."
@@ -26,6 +35,11 @@ echo "Node.js v$NODE_VERSION detected. ✓"
 # Create necessary directories
 echo "Creating directories..."
 mkdir -p data logs
+
+# Find and replace yourdomain.com in all relevant files
+echo "Updating domain references in project files..."
+find src templates public scripts -type f -name "*.js" -o -name "*.html" -o -name "*.css" | xargs sed -i '' "s/yourdomain\.com/$DOMAIN_NAME/g" 2>/dev/null || find src templates public scripts -type f -name "*.js" -o -name "*.html" -o -name "*.css" | xargs sed -i "s/yourdomain\.com/$DOMAIN_NAME/g" 2>/dev/null || true
+echo "Domain references updated. ✓"
 
 # Install dependencies
 echo "Installing dependencies..."
@@ -99,6 +113,8 @@ echo "1. Edit your .env file if you haven't already"
 echo "2. Deploy the Cloudflare Worker using the instructions in the README"
 echo "3. Set up the systemd service"
 echo "4. Test the service with: node scripts/test-email.js your@email.com"
+echo
+echo "Your domain ($DOMAIN_NAME) has been configured in all relevant files."
 echo
 
 chmod +x scripts/setup.sh
