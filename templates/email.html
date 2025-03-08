@@ -16,21 +16,42 @@
     .post-title {
       font-size: 24px;
       margin-bottom: 16px;
+      color: inherit; /* Ensures title color matches theme */
+    }
+    .post-title-link {
+      text-decoration: none;
+      color: inherit;
+    }
+    .post-title-link:hover {
+      text-decoration: underline;
+    }
+    .post-image-link {
+      display: block;
+      text-decoration: none;
     }
     .post-image {
       width: 100%;
+      max-width: 400px;
+      max-height: 300px;
       height: auto;
+      object-fit: contain;
       border-radius: 8px;
-      margin-bottom: 16px;
+      margin: 0 auto 16px;
+      display: block;
     }
     .read-more-button {
       display: inline-block;
-      background-color: #3d5afe;
-      color: white;
-      padding: 10px 20px;
+      background-color: #1a237e;  /* Darker blue background */
+      color: #ffffff;             /* Brighter white text */
+      padding: 12px 24px;         /* Slightly larger padding */
       text-decoration: none;
       border-radius: 4px;
       margin-top: 16px;
+      font-size: 16px;           /* Larger text size */
+      font-weight: 500;          /* Semi-bold text */
+    }
+    .read-more-button:hover {
+      background-color: #283593;  /* Lighter blue on hover */
     }
     .footer {
       margin-top: 30px;
@@ -53,8 +74,12 @@
   </style>
 </head>
 <body>
-  <h1 class="post-title">{{postTitle}}</h1>
-  <img class="post-image" src="{{postImage}}" alt="{{postTitle}}">
+  <a href="{{postUrl}}" class="post-title-link">
+    <h1 class="post-title">{{postTitle}}</h1>
+  </a>
+  <a href="{{postUrl}}" class="post-image-link">
+    <img class="post-image" src="{{postImage}}" alt="{{postTitle}}">
+  </a>
   <a href="{{postUrl}}" class="read-more-button">Read the full post</a>
   <div class="footer">
     <p>You're receiving this because you subscribed to updates from <a href="https://mattsayar.com">mattsayar.com</a></p>
