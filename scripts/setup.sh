@@ -128,6 +128,7 @@ echo "1. Edit your .env file if you haven't already"
 echo "2. Deploy the Cloudflare Worker using the instructions in the README"
 echo "3. Set up the systemd service (instructions above)"
 echo "4. Test the service with: node scripts/test-email.js your@email.com"
+echo "5. Log rotation: sudo cp logrotate.conf /etc/logrotate.d/rsspberry2email"
 echo
 echo "Your domain ($DOMAIN_NAME) has been configured in all relevant files."
 echo
