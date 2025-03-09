@@ -46,7 +46,16 @@ function updateHealthCheckTimestamp() {
 function checkServiceHealth() {
   try {
     const data = JSON.parse(fs.readFileSync(SUBSCRIBERS_FILE, 'utf8'));
-    const lastHealthCheck = new Date(data.stats.lastHealthCheckPassed || 0);
+    
+    // Skip the check if this is the first run (no timestamp yet)
+    if (!data.stats || !data.stats.lastHealthCheckPassed) {
+      logger.info('No previous health check found - assuming this is the first run');
+      // Update the timestamp so future checks work correctly
+      updateHealthCheckTimestamp();
+      return true;
+    }
+    
+    const lastHealthCheck = new Date(data.stats.lastHealthCheckPassed);
     const hoursSinceLastHealthCheck = (Date.now() - lastHealthCheck.getTime()) / (1000 * 60 * 60);
     
     logger.info(`Hours since last health check: ${hoursSinceLastHealthCheck.toFixed(2)}`);
