@@ -1,14 +1,24 @@
 # rsspberry2email Service
 
-A lightweight service that monitors an RSS feed for new content and emails subscribers when new posts are published. The service also manages email subscriptions through a simple form that can be embedded on a website, with a Cloudflare Worker acting as a secure proxy for subscription requests.
+A lightweight service meant to run on a Raspberry Pi that monitors an RSS feed for new content and emails subscribers when new posts are published. The service also manages email subscriptions through a simple form that can be embedded on a website, with a Cloudflare Worker acting as a secure proxy for subscription requests.
+
+You're a good candidate for this software if:
+* You have a statically-hosted website/blog with an RSS feed
+* You want to offer newsletter updates to tens of people
+* You use or want to use Cloudflare for DNS
+* You have a Raspberry Pi or some other machine in your local network for grunt work
+* You're relatively tech-savvy
+* You're ~~cheap~~ too frugal to pay for a newsletter service
+
+I wrote about this project [on my website](https://mattsayar.com/how-to-actually-run-a-free-newsletter-for-your-blog).
 
 ## Features
 
 - **RSS Monitoring**: Checks the RSS feed at configurable intervals for new posts
 - **Email Notifications**: Sends styled HTML emails to subscribers when new content is published
-- **Subscription Management**: Handles subscriber sign-ups and unsubscribes
-- **Anti-Spam Protection**: Includes rate limiting, email validation, and honeypot fields
-- **Monitoring**: Uses ntfy.sh for alerts and health monitoring
+- **Subscription Management**: Handles subscriber sign-ups and (in the future) unsubscribes
+- **Anti-Spam Protection**: Simple rate limiting and email validation
+- **Monitoring**: Uses ntfy.sh for functionality, alerts, and health monitoring
 - **Dashboard**: Simple monitoring dashboard to check service status
 - **Security**: Cloudflare Worker proxy for subscription requests
 
@@ -39,7 +49,7 @@ A lightweight service that monitors an RSS feed for new content and emails subsc
 - Raspberry Pi or similar server (always-on)
 - SendGrid account for email delivery
 - Cloudflare account (for the subscription proxy)
-- ntfy.sh topics for notifications
+- ntfy.sh topics 
 
 ## Installation
 
@@ -61,12 +71,18 @@ The setup script will create necessary directories, install dependencies, and se
 This script will:
 - Create data and logs directories
 - Install npm dependencies
-- Create a .env file from the template
+- Create a .env file from the template (edit with your values!)
 - Generate systemd service files
 - Set up log rotation
 
-### 3. Deploy Cloudflare Worker
-Raspberry Pis' architectures (linux arm LE) don't support wrangler CLI-based installs. Following is how to configure Cloudflare via the UI.
+### 3. Create ntfy.sh topics
+1. Create a ntfy.sh account (or not, I'm not your dad)
+2. Create unique, hard-to-guess topics (ntfy.sh can generate them for you)
+3. Do that three times for alerts, subscribes, and unsubscribes (coming soon-ish!)
+4. You can view a topic anytime at https://ntfy.sh/\[whatever\]
+
+### 4. Deploy Cloudflare Worker
+Raspberry Pis' architecture (linux arm LE) doesn't support wrangler CLI-based installs. Here is how to configure Cloudflare via the UI.
 
 1. Log in to your Cloudflare dashboard at https://dash.cloudflare.com/
 2. Navigate to "Workers & Pages" from the sidebar
@@ -78,41 +94,34 @@ Raspberry Pis' architectures (linux arm LE) don't support wrangler CLI-based ins
 #### Set up KV namespace for rate limiting:
 
 1. In the Cloudflare dashboard, go to "Workers & Pages"
-2. Click on "KV" in the sidebar
+2. Click on "Storage and Databases > KV" in the sidebar
 3. Click "Create namespace"
-4. Name it "RATE_LIMIT" and click "Add"
-5. Go back to your worker
-6. Click on "Settings" and then "Variables"
-7. Under "KV Namespace Bindings", click "Add binding"
-8. Set the Variable name to "RATE_LIMIT_NAMESPACE" and select your KV namespace
+4. Name it `RATE_LIMIT_NAMESPACE` and click "Add"
+5. Go back to your Worker
+6. Click on "Settings" and then "Variables and Secrets"
+7. Under "Bindings", click the "+ Add" binding
+8. Set the Variable name to `RATE_LIMIT_NAMESPACE` and select your KV namespace
 9. Click "Save"
 
 #### Configure environment variables:
 
-1. Still in your worker's "Variables" settings
-2. Under "Environment Variables", click "Add variable"
+1. Still in your worker's "Variables and Secrets" settings
+2. Under "Variables and Secrets", click the "+ Add" button
 3. Add the following variables:
-   - `NTFY_TOPIC`: Your ntfy.sh subscription topic
-   - `ALLOWED_ORIGIN`: Your website domain (e.g., "https://yourdomain.com")
+   - `NTFY_SUBSCRIBE_TOPIC`: Your ntfy.sh subscription topic (text)
 4. Click "Save"
 
 #### Set up a route:
 
-1. Go to "Workers & Pages" in the dashboard
-2. Click on your worker
-3. Go to "Triggers" and click "Add route"
+1. Still in your worker's Settings
+2. Go to "Triggers" and click the "+ Add" button
 4. Add a route like `yourdomain.com/api/subscribe*`
 5. Click "Save"
 
-
-
 ## Usage
 
-### Let systemd handle it
-
-```bash
-systemctl enable rsspberry2email
-```
+### Let systemd handle running it
+This was already set up with the setup.sh script
 
 ### Testing Email Delivery
 
@@ -145,7 +154,6 @@ Copy the `public/subscription-form.html` file to your website and update the API
   <!-- Form content -->
 </form>
 ```
-
 
 ## Monitoring
 

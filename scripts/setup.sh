@@ -107,8 +107,10 @@ Restart=on-failure
 RestartSec=10
 # Create log directory and set permissions on start if needed
 ExecStartPre=/bin/bash -c "mkdir -p $PWD/logs && touch $PWD/logs/app.log && chmod 644 $PWD/logs/app.log"
-StandardOutput=append:$PWD/logs/app.log
-StandardError=append:$PWD/logs/app.log
+
+# Set output to null to prevent duplicate logging since the app handles its own logging to app.log
+StandardOutput=append:null
+StandardError=append:null
 
 [Install]
 WantedBy=multi-user.target
@@ -119,7 +121,6 @@ echo "  sudo cp rsspberry2email.service /etc/systemd/system/"
 echo "  sudo systemctl daemon-reload"
 echo "  sudo systemctl enable rsspberry2email"
 echo "  sudo systemctl start rsspberry2email"
-echo "  sudo journalctl -u rsspberry2email -f  # To view service logs"
 
 echo
 echo "Setup complete! Next steps:"
