@@ -5,7 +5,10 @@ const requiredEnvVars = [
   'SENDGRID_API_KEY',
   'NTFY_ALERT_TOPIC',
   'NTFY_SUBSCRIBE_TOPIC',
-  'NTFY_UNSUBSCRIBE_TOPIC'
+  'NTFY_UNSUBSCRIBE_TOPIC',
+  'EMAIL_FROM',
+  'EMAIL_FROM_NAME',
+  'RSS_FEED_URL',
 ];
 
 const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
@@ -18,12 +21,13 @@ if (missingEnvVars.length > 0) {
 
 module.exports = {
   rss: {
-    feedUrl: 'https://mattsayar.com/feed.xml',
+    feedUrl: process.env.RSS_FEED_URL,
     checkIntervalHours: 1
   },
   email: {
-    from: 'matt@mattsayar.com',
-    subject: 'New Post from Matt Sayar',
+    from: process.env.EMAIL_FROM,
+    fromName: process.env.EMAIL_FROM,
+    subject: 'New Post',
     sendgridApiKey: process.env.SENDGRID_API_KEY
   },
   notifications: {
@@ -34,10 +38,5 @@ module.exports = {
   },
   healthCheck: {
     maxHoursBetweenRuns: 3, // Alert if service hasn't run for this many hours
-  },
-  backup: {
-    enabled: false, // optional feature
-    googleDriveCredentialsPath: './credentials.json',
-    backupIntervalHours: 24
   }
 };

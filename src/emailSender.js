@@ -13,9 +13,9 @@ const templatePath = path.join(__dirname, '../templates', 'email.html');
 const templateSource = fs.readFileSync(templatePath, 'utf8');
 const template = Handlebars.compile(templateSource);
 
-// Generate unsubscribe URL
+// Generate unsubscribe URL 
 function generateUnsubscribeUrl(token) {
-  return `https://ntfy.sh/${config.notifications.unsubscribeTopic}?c=Unsubscribe&t=${encodeURIComponent(token)}&action=view&redirect=https://yourdomain.com/unsubscribed`;
+  return `TODO`;
 }
 
 // Send new post notification emails
@@ -27,7 +27,7 @@ async function sendNewPostEmail(subscribers, post) {
     // Render email template
     const html = template({
       postTitle: post.title,
-      postImage: post.ogImage || 'https://yourdomain.com/images/logo.png',
+      postImage: post.ogImage || 'https://yourdomain.com/media/website/logo.png', // who knows it is for your site
       postUrl: post.link,
       unsubscribeUrl: generateUnsubscribeUrl(subscriber.unsubscribeToken)
     });
