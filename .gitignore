@@ -12,5 +12,6 @@ data/*.json
 # Log files
 logs/*.log
 
-# Google Drive credentials
-credentials.json
+#IDE and other files
+.vscode
+.DS_Store

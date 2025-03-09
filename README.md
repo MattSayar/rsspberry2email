@@ -6,15 +6,15 @@ You're a good candidate for this software if:
 * You have a statically-hosted website/blog with an RSS feed
 * You want to offer newsletter updates to tens of people
 * You use or want to use Cloudflare for DNS
-* You have a Raspberry Pi or some other machine in your local network for grunt work
+* You have a Raspberry Pi or some other machine in your closet
 * You're relatively tech-savvy
-* You're ~~cheap~~ too frugal to pay for a newsletter service
+* You're ~~cheap~~ too frugal to pay for a newsletter service like MailChimp
 
 I wrote about this project [on my website](https://mattsayar.com/how-to-actually-run-a-free-newsletter-for-your-blog).
 
 ## Features
 
-- **RSS Monitoring**: Checks the RSS feed at configurable intervals for new posts
+- **RSS Monitoring**: Checks an RSS feed every hour for new posts
 - **Email Notifications**: Sends styled HTML emails to subscribers when new content is published
 - **Subscription Management**: Handles subscriber sign-ups and (in the future) unsubscribes
 - **Anti-Spam Protection**: Simple rate limiting and email validation
@@ -71,7 +71,7 @@ The setup script will create necessary directories, install dependencies, and se
 This script will:
 - Create data and logs directories
 - Install npm dependencies
-- Create a .env file from the template (edit with your values!)
+- Create a .env file from the template (edit with your own values!)
 - Generate systemd service files
 - Set up log rotation
 
@@ -120,9 +120,6 @@ Raspberry Pis' architecture (linux arm LE) doesn't support wrangler CLI-based in
 
 ## Usage
 
-### Let systemd handle running it
-This was already set up with the setup.sh script
-
 ### Testing Email Delivery
 
 To test email delivery without waiting for a new post:
@@ -135,7 +132,22 @@ npm test
 node scripts/test-email.js test@example.com
 ```
 
-### Monitoring Dashboard
+### Embedding the Subscription Form
+
+Copy the form in `public/subscription-form.html` where you'd like on your website and verify the API endpoint URL in the JavaScript fetch call matches your Cloudflare Worker endpoint:
+
+```html
+<form id="subscription-form" action="https://yourdomain.com/api/subscribe" method="post">
+  <!-- Form content -->
+</form>
+```
+
+### Third-party Free-tier Limits
+* Sendgrid: 100 emails/day
+* ntfy.sh: 250 notifications/day
+* Cloudflare: 100,000 Worker requests/day (static assets free)
+
+## Monitoring
 
 The service includes a simple monitoring dashboard that shows:
 - Service status
@@ -145,19 +157,7 @@ The service includes a simple monitoring dashboard that shows:
 
 Access it at `http://your-server-ip:3000/dashboard.html`
 
-### Embedding the Subscription Form
-
-Copy the `public/subscription-form.html` file to your website and update the API endpoint URL in the JavaScript fetch call to match your Cloudflare Worker endpoint:
-
-```html
-<form id="subscription-form" action="https://yourdomain.com/api/subscribe" method="post">
-  <!-- Form content -->
-</form>
-```
-
-## Monitoring
-
-The service uses [ntfy.sh](https://ntfy.sh/), a simple pub/sub service, for functionality, monitoring, and alerts. You'll receive notifications for:
+The service also uses [ntfy.sh](https://ntfy.sh/), a simple pub/sub service, for functionality, monitoring, and alerts. You can go directlyl to those topics in your browser for:
 
 - RSS feed errors
 - Email sending failures
@@ -181,7 +181,7 @@ The service uses [ntfy.sh](https://ntfy.sh/), a simple pub/sub service, for func
 3. **Service not running**
    - Check systemd service is running correctly
    - Verify Node.js is installed and working
-   - Check logs for errors
+   - Check logs/ntfy.sh for errors
 
 
 ### Logs
@@ -193,7 +193,3 @@ Logs are stored in the `logs` directory. Check `app.log` for the most recent act
 ### Backing Up Subscribers
 
 The subscribers data is stored in `data/subscribers.json`. Consider making regular backups of this file.
-
-## License
-
-MIT
