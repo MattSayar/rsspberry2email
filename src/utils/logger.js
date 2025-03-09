@@ -14,7 +14,8 @@ const logFile = path.join(logsDir, 'app.log');
 const LOG_LEVELS = {
   INFO: 'INFO',
   WARN: 'WARN',
-  ERROR: 'ERROR'
+  ERROR: 'ERROR',
+  DEBUG: "DEBUG"
 };
 
 // Get current timestamp
@@ -58,6 +59,12 @@ function info(message) {
   writeToLogFile(formattedMessage);
 }
 
+function debug(message) {
+  const formattedMessage = formatLogMessage(LOG_LEVELS.DEBUG, message);
+  console.log(formattedMessage);
+  writeToLogFile(formattedMessage);
+}
+
 function warn(message) {
   const formattedMessage = formatLogMessage(LOG_LEVELS.WARN, message);
   console.warn(formattedMessage);
@@ -74,5 +81,6 @@ module.exports = {
   info,
   warn,
   error,
+  debug,
   LOG_LEVELS
 };

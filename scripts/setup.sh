@@ -32,9 +32,17 @@ if [ "$NODE_MAJOR" -lt 16 ]; then
 fi
 echo "Node.js v$NODE_VERSION detected. ✓"
 
-# Create necessary directories
-echo "Creating directories..."
+# Create necessary directories and set proper permissions
+echo "Creating directories with proper permissions..."
 mkdir -p data logs
+touch logs/app.log
+chmod 755 logs
+chmod 644 logs/app.log
+echo "Directories and log file created with proper permissions. ✓"
+
+# Get the current user
+CURRENT_USER=$(whoami)
+echo "Setup is running as user: $CURRENT_USER"
 
 # Find and replace yourdomain.com in all relevant files
 echo "Updating domain references in project files..."
@@ -92,11 +100,13 @@ After=network.target
 
 [Service]
 Type=simple
-User=$USER
+User=$CURRENT_USER
 WorkingDirectory=$PWD
 ExecStart=/usr/bin/node $PWD/src/index.js
 Restart=on-failure
 RestartSec=10
+# Create log directory and set permissions on start if needed
+ExecStartPre=/bin/bash -c "mkdir -p $PWD/logs && touch $PWD/logs/app.log && chmod 644 $PWD/logs/app.log"
 StandardOutput=append:$PWD/logs/app.log
 StandardError=append:$PWD/logs/app.log
 
@@ -109,12 +119,13 @@ echo "  sudo cp rsspberry2email.service /etc/systemd/system/"
 echo "  sudo systemctl daemon-reload"
 echo "  sudo systemctl enable rsspberry2email"
 echo "  sudo systemctl start rsspberry2email"
+echo "  sudo journalctl -u rsspberry2email -f  # To view service logs"
 
 echo
 echo "Setup complete! Next steps:"
 echo "1. Edit your .env file if you haven't already"
 echo "2. Deploy the Cloudflare Worker using the instructions in the README"
-echo "3. Set up the systemd service"
+echo "3. Set up the systemd service (instructions above)"
 echo "4. Test the service with: node scripts/test-email.js your@email.com"
 echo
 echo "Your domain ($DOMAIN_NAME) has been configured in all relevant files."
