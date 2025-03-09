@@ -15,7 +15,7 @@ const template = Handlebars.compile(templateSource);
 
 // Generate unsubscribe URL 
 function generateUnsubscribeUrl(token) {
-  return `TODO`;
+  return token; //TODO
 }
 
 // Send new post notification emails
