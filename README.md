@@ -157,6 +157,8 @@ The service includes a simple monitoring dashboard that shows:
 
 Access it at `http://your-server-ip:3000/dashboard.html`
 
+<img width="964" alt="image" src="https://github.com/user-attachments/assets/c50f7587-a214-4822-aa7e-b413b97c5b5a" />
+
 The service also uses [ntfy.sh](https://ntfy.sh/), a simple pub/sub service, for functionality, monitoring, and alerts. You can go directlyl to those topics in your browser for:
 
 - RSS feed errors
