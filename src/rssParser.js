@@ -85,10 +85,31 @@ async function fetchLatestPost() {
       ogImage = latestPost['media:content'].$.url;
     }
     
+    let postLink;
+    if (feedType === 'RSS') {
+      postLink = latestPost.link;
+    } else {
+      // For Atom feeds
+      if (typeof latestPost.link === 'string') {
+        postLink = latestPost.link;
+      } else if (typeof latestPost.link === 'object') {
+        // Try various structures that might contain the URL
+        postLink = latestPost.link.href || 
+                  (latestPost.link.$ ? latestPost.link.$.href : null) ||
+                  (latestPost.link['@_href']) || // Some parsers use this
+                  latestPost.link._;
+      }
+    }
+
+    if (!postLink) {
+      logger.warn(`Could not extract a link from the latest post. Using fallback URL.`);
+      postLink = 'https://mattsayar.com'; // Fallback to site homepage
+    }
+
     const post = {
       id: feedType === 'RSS' ? (latestPost.guid || latestPost.link) : latestPost.id,
       title: latestPost.title,
-      link: feedType === 'RSS' ? latestPost.link : latestPost.link.href,
+      link: postLink,
       pubDate: feedType === 'RSS' ? latestPost.pubDate : latestPost.updated,
       ogImage: ogImage
     };
