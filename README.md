@@ -1,4 +1,4 @@
-# rsspberry2email Service
+# rsspberry2email
 
 A lightweight service meant to run on a Raspberry Pi that monitors an RSS feed for new content and emails subscribers when new posts are published. The service also manages email subscriptions through a simple form that can be embedded on a website, with a Cloudflare Worker acting as a secure proxy for subscription requests.
 
@@ -10,7 +10,7 @@ You're a good candidate for this software if:
 * You're relatively tech-savvy
 * You're ~~cheap~~ too frugal to pay for a newsletter service like MailChimp
 
-I wrote about this project [on my website](https://mattsayar.com/how-to-actually-run-a-free-newsletter-for-your-blog).
+I wrote about this project [on my website](https://mattsayar.com/i-didnt-want-to-pay-for-a-newsletter-email-service-so-i-built-my-own).
 
 ## Features
 
