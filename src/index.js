@@ -116,7 +116,8 @@ monitoring.startHealthCheck();
 // Initialize dashboard server
 logger.info('Starting monitoring dashboard');
 const dashboard = require('./dashboard');
-dashboard.startDashboard(3000);
+const dashboardPort = process.env.PORT || 3000;
+dashboard.startDashboard(dashboardPort);
 
 // Run the rsspberry2email check immediately on startup
 logger.info('Running initial rsspberry2email check');

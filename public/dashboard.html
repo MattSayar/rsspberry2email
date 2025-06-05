@@ -228,8 +228,10 @@
         subscribersByDate[date] = (subscribersByDate[date] || 0) + 1;
       });
       
-      // Convert to arrays for Chart.js
-      const dates = Object.keys(subscribersByDate).sort();
+      // Convert to arrays for Chart.js and sort by actual date
+      const dates = Object.keys(subscribersByDate).sort((a, b) => {
+        return new Date(a) - new Date(b);
+      });
       const counts = dates.map(date => subscribersByDate[date]);
       
       // Calculate cumulative counts
