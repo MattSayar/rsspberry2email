@@ -1,0 +1,23 @@
+[Unit]
+Description=RSS to Email Service (Brevo)
+After=network.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/rsspberry2email_brevo/rsspberry2email
+ExecStart=/usr/bin/node /home/pi/rsspberry2email_brevo/rsspberry2email/src/index.js
+Restart=on-failure
+RestartSec=10
+# Create log directory and set permissions on start if needed
+ExecStartPre=/bin/bash -c "mkdir -p /home/pi/rsspberry2email_brevo/rsspberry2email/logs && touch /home/pi/rsspberry2email_brevo/rsspberry2email/logs/app.log && chmod 644 /home/pi/rsspberry2email_brevo/rsspberry2email/logs/app.log"
+
+# Set output to null to prevent duplicate logging since the app handles its own logging to app.log
+StandardOutput=append:null
+StandardError=append:null
+
+# Environment variables for separate port
+Environment="PORT=3001"
+
+[Install]
+WantedBy=multi-user.target

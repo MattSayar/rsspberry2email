@@ -44,7 +44,7 @@ echo "Directories and log file created with proper permissions. ✓"
 CURRENT_USER=$(whoami)
 echo "Setup is running as user: $CURRENT_USER"
 
-# Find and replace yourdomain.com in all relevant files
+# Find and replace mattsayar.com in all relevant files
 echo "Updating domain references in project files..."
 # More comprehensive find command to catch all file types
 find src templates public scripts -type f | xargs grep -l "yourdomain\.com" 2>/dev/null | xargs sed -i.bak "s/yourdomain\.com/$DOMAIN_NAME/g" 2>/dev/null || true
