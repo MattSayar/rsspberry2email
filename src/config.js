@@ -2,7 +2,7 @@ require('dotenv').config();
 
 // Validate required environment variables
 const requiredEnvVars = [
-  'SENDGRID_API_KEY',
+  'BREVO_API_KEY',
   'NTFY_ALERT_TOPIC',
   'NTFY_SUBSCRIBE_TOPIC',
   'NTFY_UNSUBSCRIBE_TOPIC',
@@ -26,9 +26,9 @@ module.exports = {
   },
   email: {
     from: process.env.EMAIL_FROM,
-    fromName: process.env.EMAIL_FROM,
+    fromName: process.env.EMAIL_FROM_NAME,
     subject: 'New Post',
-    sendgridApiKey: process.env.SENDGRID_API_KEY
+    brevoApiKey: process.env.BREVO_API_KEY
   },
   notifications: {
     alertTopic: process.env.NTFY_ALERT_TOPIC,

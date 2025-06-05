@@ -47,7 +47,7 @@ I wrote about this project [on my website](https://mattsayar.com/i-didnt-want-to
 
 - Node.js v16 or higher
 - Raspberry Pi or similar server (always-on)
-- SendGrid account for email delivery
+- Brevo account for email delivery
 - Cloudflare account (for the subscription proxy)
 - ntfy.sh topics 
 
@@ -143,7 +143,7 @@ Copy the form in `public/subscription-form.html` where you'd like on your websit
 ```
 
 ### Third-party Free-tier Limits
-* Sendgrid: 100 emails/day
+* Brevo: 300 emails/day
 * ntfy.sh: 250 notifications/day
 * Cloudflare: 100,000 Worker requests/day (static assets free)
 
@@ -171,8 +171,8 @@ The service also uses [ntfy.sh](https://ntfy.sh/), a simple pub/sub service, for
 ### Common Issues
 
 1. **Emails not sending**
-   - Check SendGrid API key
-   - Verify sender domain is verified in SendGrid
+   - Check Brevo API key
+   - Verify sender email is verified in Brevo
    - Check logs for specific errors
 
 2. **Subscription form not working**

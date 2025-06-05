@@ -1,12 +1,11 @@
 const fs = require('fs');
 const path = require('path');
 const Handlebars = require('handlebars');
-const sendgrid = require('@sendgrid/mail');
+const fetch = require('node-fetch');
 const config = require('./config');
 const logger = require('./utils/logger');
 
-// Set SendGrid API key
-sendgrid.setApiKey(config.email.sendgridApiKey);
+// Brevo API will use the API key from config
 
 // Load email template
 const templatePath = path.join(__dirname, '../templates', 'email.html');
@@ -32,28 +31,44 @@ async function sendNewPostEmail(subscribers, post) {
       unsubscribeUrl: generateUnsubscribeUrl(subscriber.unsubscribeToken)
     });
     
-    // Create email message
+    // Create email message for Brevo API
     const message = {
-      to: subscriber.email,
-      from: config.email.from,
+      sender: {
+        name: config.email.fromName,
+        email: config.email.from
+      },
+      to: [{
+        email: subscriber.email
+      }],
       subject: config.email.subject,
-      html: html,
-      trackingSettings: {
-        clickTracking: { enable: false },
-        openTracking: { enable: false }
-      }
+      htmlContent: html
     };
     
-    // Send the email
-    return sendgrid.send(message)
-      .then(() => {
+    // Send the email via Brevo API
+    return fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        'accept': 'application/json',
+        'api-key': config.email.brevoApiKey,
+        'content-type': 'application/json'
+      },
+      body: JSON.stringify(message)
+    })
+    .then(response => {
+      if (response.ok) {
         logger.info(`Email sent successfully to ${subscriber.email}`);
         return { success: true, email: subscriber.email };
-      })
-      .catch(error => {
-        logger.error(`Failed to send email to ${subscriber.email}: ${error.message}`);
-        return { success: false, email: subscriber.email, error };
-      });
+      } else {
+        return response.json().then(error => {
+          logger.error(`Failed to send email to ${subscriber.email}: ${JSON.stringify(error)}`);
+          return { success: false, email: subscriber.email, error };
+        });
+      }
+    })
+    .catch(error => {
+      logger.error(`Failed to send email to ${subscriber.email}: ${error.message}`);
+      return { success: false, email: subscriber.email, error };
+    });
   });
   
   // Send all emails with proper error handling

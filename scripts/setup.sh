@@ -61,7 +61,7 @@ if [ ! -f .env ]; then
   echo "Setting up environment variables..."
   cp .env.example .env
   echo "Please edit .env file with your actual values:"
-  echo "  SENDGRID_API_KEY: Your SendGrid API key"
+  echo "  BREVO_API_KEY: Your Brevo API key"
   echo "  EMAIL_FROM: Email address to send from"
   echo "  EMAIL_FROM_NAME: Name to display in the from field"
   echo "  RSS_FEED_URL: URL of the RSS feed to monitor"
