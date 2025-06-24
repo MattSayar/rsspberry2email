@@ -2,6 +2,8 @@
 
 A lightweight service meant to run on a Raspberry Pi that monitors an RSS feed for new content and emails subscribers when new posts are published. The service also manages email subscriptions through a simple form that can be embedded on a website, with a Cloudflare Worker acting as a secure proxy for subscription requests.
 
+![image](https://github.com/user-attachments/assets/f474e4b5-562d-4971-aa37-d8d725a2e980)
+
 You're a good candidate for this software if:
 * You have a statically-hosted website/blog with an RSS feed
 * You want to offer newsletter updates to tens of people
@@ -155,9 +157,7 @@ The service includes a simple monitoring dashboard that shows:
 - Subscriber count
 - Last post information
 
-Access it at `http://your-server-ip:3000/dashboard.html`
-
-<img width="964" alt="image" src="https://github.com/user-attachments/assets/c50f7587-a214-4822-aa7e-b413b97c5b5a" />
+Access it at `http://your-server-ip:3001/dashboard.html`
 
 The service also uses [ntfy.sh](https://ntfy.sh/), a simple pub/sub service, for functionality, monitoring, and alerts. You can go directlyl to those topics in your browser for:
 
