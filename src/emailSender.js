@@ -26,7 +26,7 @@ async function sendNewPostEmail(subscribers, post) {
     // Render email template
     const html = template({
       postTitle: post.title,
-      postImage: post.ogImage || 'https://mattsayar.com/media/website/logo.png', // who knows it is for your site
+      postImage: post.ogImage || 'https://mattsayar.com/media/files/logo.png', // change to your site but feel free to use mine! haha
       postUrl: post.link,
       unsubscribeUrl: generateUnsubscribeUrl(subscriber.unsubscribeToken)
     });
