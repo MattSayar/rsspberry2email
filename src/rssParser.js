@@ -106,15 +106,42 @@ async function fetchLatestPost() {
       postLink = 'https://mattsayar.com'; // Fallback to site homepage
     }
 
+    // Extract categories/tags
+    let categories = [];
+    if (latestPost.category) {
+      // Handle both single and multiple categories
+      const categoryData = Array.isArray(latestPost.category)
+        ? latestPost.category
+        : [latestPost.category];
+
+      // Extract the term/value from each category
+      categories = categoryData.map(cat => {
+        // Handle different category formats
+        // RSS: <category>tag</category> or <category term="tag"/>
+        // Atom: <category term="tag"/>
+        if (typeof cat === 'string') {
+          return cat;
+        } else if (cat.$ && cat.$.term) {
+          return cat.$.term;
+        } else if (cat['@_term']) {
+          return cat['@_term'];
+        } else if (cat._) {
+          return cat._;
+        }
+        return null;
+      }).filter(Boolean); // Remove null values
+    }
+
     const post = {
       id: feedType === 'RSS' ? (latestPost.guid || latestPost.link) : latestPost.id,
       title: latestPost.title,
       link: postLink,
       pubDate: feedType === 'RSS' ? latestPost.pubDate : latestPost.updated,
-      ogImage: ogImage
+      ogImage: ogImage,
+      categories: categories
     };
-    
-    logger.info(`Latest post: ${post.title} (${post.pubDate})`);
+
+    logger.info(`Latest post: ${post.title} (${post.pubDate}), Categories: ${categories.join(', ') || 'none'}`);
     return post;
   } catch (error) {
     logger.error(`Failed to fetch latest post: ${error.message}`);
