@@ -58,19 +58,27 @@ async function checkAndSendEmails() {
         
         if (isNewerPost) {
           logger.info(`New post detected: ${latestPost.title}`);
-          
-          // Get subscribers
-          const subscribers = subscriberManager.getSubscribers();
-          if (subscribers.length === 0) {
-            logger.info('No subscribers to send to');
+
+          // Check if post has the "send_newsletter" tag
+          const hasSendNewsletterTag = latestPost.categories &&
+                                       latestPost.categories.includes('send_newsletter');
+
+          if (!hasSendNewsletterTag) {
+            logger.info(`Post "${latestPost.title}" does not have the "send_newsletter" tag. Skipping email.`);
           } else {
-            // Send emails
-            logger.info(`Sending emails to ${subscribers.length} subscribers`);
-            await emailSender.sendNewPostEmail(subscribers, latestPost);
-            logger.info(`Email sending complete`);
+            // Get subscribers
+            const subscribers = subscriberManager.getSubscribers();
+            if (subscribers.length === 0) {
+              logger.info('No subscribers to send to');
+            } else {
+              // Send emails
+              logger.info(`Sending emails to ${subscribers.length} subscribers`);
+              await emailSender.sendNewPostEmail(subscribers, latestPost);
+              logger.info(`Email sending complete`);
+            }
           }
-          
-          // Update last post information
+
+          // Update last post information regardless of whether we sent emails
           subscriberManager.updateLastPost(latestPost);
         } else {
           logger.info(`Post "${latestPost.title}" is not newer than the last processed post. Skipping email.`);
