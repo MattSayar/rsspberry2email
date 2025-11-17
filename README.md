@@ -122,6 +122,10 @@ Raspberry Pis' architecture (linux arm LE) doesn't support wrangler CLI-based in
 
 ## Usage
 
+### Tag your post
+
+Your RSS/Atom feed requires the category `send_newsletter` with your post in order to send the email, otherwise it will be skipped.
+
 ### Testing Email Delivery
 
 To test email delivery without waiting for a new post:
