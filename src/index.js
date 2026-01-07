@@ -46,7 +46,7 @@ async function checkAndSendEmails() {
         // If there's no last post record, this is likely a first run or after database reset
         // Just save this as the latest post without sending emails
         logger.info('No previous post record found. Storing current post without sending emails.');
-        subscriberManager.updateLastPost(latestPost);
+        subscriberManager.updateLastPost(latestPost, false);
       } else {
         // Check the published dates to determine if it's truly a new post
         const latestPostDate = new Date(latestPost.pubDate);
@@ -63,6 +63,7 @@ async function checkAndSendEmails() {
           const hasSendNewsletterTag = latestPost.categories &&
                                        latestPost.categories.includes('send_newsletter');
 
+          let emailWasSent = false;
           if (!hasSendNewsletterTag) {
             logger.info(`Post "${latestPost.title}" does not have the "send_newsletter" tag. Skipping email.`);
           } else {
@@ -75,17 +76,18 @@ async function checkAndSendEmails() {
               logger.info(`Sending emails to ${subscribers.length} subscribers`);
               await emailSender.sendNewPostEmail(subscribers, latestPost);
               logger.info(`Email sending complete`);
+              emailWasSent = true;
             }
           }
 
-          // Update last post information regardless of whether we sent emails
-          subscriberManager.updateLastPost(latestPost);
+          // Update last post information, tracking whether emails were sent
+          subscriberManager.updateLastPost(latestPost, emailWasSent);
         } else {
           logger.info(`Post "${latestPost.title}" is not newer than the last processed post. Skipping email.`);
-          
+
           // Still update the record if the ID is different but date is not newer
           // This handles cases where the CMS updates post IDs without changing content
-          subscriberManager.updateLastPost(latestPost);
+          subscriberManager.updateLastPost(latestPost, false);
         }
       }
     } else {
