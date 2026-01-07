@@ -299,7 +299,13 @@
         if (data.lastPost) {
           document.getElementById('post-title').textContent = data.lastPost.title || '-';
           document.getElementById('post-date').textContent = formatDate(data.lastPost.publishedAt);
-          document.getElementById('email-sent-date').textContent = formatDate(data.lastPost.emailSentAt);
+
+          // Check if email was actually sent
+          if (data.lastPost.emailSentAt) {
+            document.getElementById('email-sent-date').textContent = formatDate(data.lastPost.emailSentAt);
+          } else {
+            document.getElementById('email-sent-date').textContent = 'Not sent (missing send_newsletter tag)';
+          }
         }
         
         // Update subscribers table

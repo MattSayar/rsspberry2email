@@ -293,22 +293,24 @@ function getLastPost() {
 }
 
 // Update the last post information
-function updateLastPost(post) {
+function updateLastPost(post, emailWasSent = false) {
   try {
     const data = JSON.parse(fs.readFileSync(SUBSCRIBERS_FILE, 'utf8'));
-    
+
     data.lastPost = {
       id: post.id,
       title: post.title,
       publishedAt: post.pubDate,
-      emailSentAt: new Date().toISOString()
+      emailSentAt: emailWasSent ? new Date().toISOString() : null
     };
-    
-    data.stats.totalEmailsSent += data.subscribers.length;
+
+    if (emailWasSent) {
+      data.stats.totalEmailsSent += data.subscribers.length;
+    }
     data.stats.lastRunAt = new Date().toISOString();
-    
+
     fs.writeFileSync(SUBSCRIBERS_FILE, JSON.stringify(data, null, 2));
-    logger.info(`Updated last post: ${post.title}`);
+    logger.info(`Updated last post: ${post.title}${emailWasSent ? ' (email sent)' : ' (email skipped)'}`);
     return true;
   } catch (error) {
     logger.error(`Failed to update last post: ${error.message}`);
